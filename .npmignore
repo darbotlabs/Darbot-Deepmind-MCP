@@ -1,0 +1,48 @@
+# Source files
+src/
+*.ts
+!dist/**/*.d.ts
+
+# Configuration files
+tsconfig.json
+jest.config.js
+.eslintrc.json
+.prettierrc
+
+# Test files
+__tests__/
+*.test.ts
+*.spec.ts
+coverage/
+
+# Development files
+.github/
+.vscode/
+.idea/
+
+# Documentation source
+docs/
+*.md
+!README.md
+!CHANGELOG.md
+
+# Build files
+Dockerfile
+docker-compose.yml
+
+# Logs and temp files
+*.log
+tmp/
+temp/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Git files
+.git/
+.gitignore
+
+# Development dependencies
+.npmrc
+package-lock.json

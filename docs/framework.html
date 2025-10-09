@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Technical framework documentation for Darbot Deepmind MCP Server">
+    <title>Framework - Darbot Deepmind MCP Server</title>
+    <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+    <header>
+        <nav class="navbar">
+            <div class="container">
+                <div class="nav-brand">
+                    <h1>🧠 Darbot Deepmind MCP</h1>
+                </div>
+                <ul class="nav-menu">
+                    <li><a href="index.html">Home</a></li>
+                    <li><a href="configuration.html">Configuration</a></li>
+                    <li><a href="framework.html">Framework</a></li>
+                    <li><a href="api-reference.html">API Reference</a></li>
+                    <li><a href="troubleshooting.html">Troubleshooting</a></li>
+                    <li><a href="https://github.com/darbotlabs/darbot-deepmind-mcp" target="_blank">GitHub</a></li>
+                </ul>
+            </div>
+        </nav>
+    </header>
+
+    <main>
+        <section class="section">
+            <div class="container">
+                <div class="breadcrumbs">
+                    <a href="index.html">Home</a>
+                    <span>/</span>
+                    <span>Framework</span>
+                </div>
+
+                <div class="content">
+                    <h1>Framework Documentation</h1>
+                    <p>This documentation covers the technical architecture, design patterns, and implementation details of the Darbot Deepmind MCP Server.</p>
+
+                    <h2>Technical Stack</h2>
+                    
+                    <h3>Core Technologies</h3>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Technology</th>
+                                <th>Version</th>
+                                <th>Purpose</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>TypeScript</strong></td>
+                                <td>5.7.2+</td>
+                                <td>Type-safe development with strict type checking</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Node.js</strong></td>
+                                <td>18.0.0+</td>
+                                <td>Runtime environment</td>
+                            </tr>
+                            <tr>
+                                <td><strong>MCP SDK</strong></td>
+                                <td>0.5.0</td>
+                                <td>Model Context Protocol implementation</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Zod</strong></td>
+                                <td>3.23.8+</td>
+                                <td>Schema validation and type inference</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Chalk</strong></td>
+                                <td>5.3.0+</td>
+                                <td>Colored console output</td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <h3>Development Tools</h3>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Tool</th>
+                                <th>Purpose</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>Jest</strong></td>
+                                <td>Testing framework with 80%+ coverage requirement</td>
+                            </tr>
+                            <tr>
+                                <td><strong>ESLint</strong></td>
+                                <td>Code linting and quality enforcement</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Prettier</strong></td>
+                                <td>Code formatting and style consistency</td>
+                            </tr>
+                            <tr>
+                                <td><strong>tsx</strong></td>
+                                <td>TypeScript execution for development</td>
+                            </tr>
+                            <tr>
+                                <td><strong>ts-jest</strong></td>
+                                <td>TypeScript support for Jest</td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <h2>Architecture Overview</h2>
+
+                    <h3>Server Architecture</h3>
+                    <p>The Darbot Deepmind MCP Server implements a stateful reasoning engine with the following key components:</p>
+
+                    <div class="code-block">
+                        <pre><code>┌─────────────────────────────────────────┐
+│         MCP Client (Claude/VS Code)     │
+└──────────────────┬──────────────────────┘
+                   │ MCP Protocol
+                   │ (stdio transport)
+┌──────────────────▼──────────────────────┐
+│      DarbotDeepmindServer Instance      │
+│  ┌────────────────────────────────────┐ │
+│  │   Tool: darbot_deepmind            │ │
+│  │   - Input Validation (Zod)         │ │
+│  │   - Thought Processing             │ │
+│  │   - History Management             │ │
+│  │   - Branch Tracking                │ │
+│  └────────────────────────────────────┘ │
+│  ┌────────────────────────────────────┐ │
+│  │   Thought History                  │ │
+│  │   - Sequential storage             │ │
+│  │   - Revision tracking              │ │
+│  │   - Branch mapping                 │ │
+│  └────────────────────────────────────┘ │
+│  ┌────────────────────────────────────┐ │
+│  │   Console Logger                   │ │
+│  │   - Colored output (Chalk)         │ │
+│  │   - Configurable verbosity         │ │
+│  └────────────────────────────────────┘ │
+└─────────────────────────────────────────┘</code></pre>
+                    </div>
+
+                    <h3>Design Patterns</h3>
+
+                    <h4>1. Schema-First Validation</h4>
+                    <p>All inputs are validated using Zod schemas before processing:</p>
+                    <div class="code-block">
+                        <pre><code>const DeepmindSchema = z.object({
+  thought: z.string().min(1),
+  nextThoughtNeeded: z.boolean(),
+  thoughtNumber: z.number().int().positive(),
+  totalThoughts: z.number().int().positive(),
+  isRevision: z.boolean().optional(),
+  revisesThought: z.number().int().positive().optional(),
+  branchFromThought: z.number().int().positive().optional(),
+  branchId: z.string().optional(),
+  needsMoreThoughts: z.boolean().optional(),
+});</code></pre>
+                    </div>
+
+                    <h4>2. Stateful Reasoning Engine</h4>
+                    <p>The server maintains thought history to enable:</p>
+                    <ul>
+                        <li>Revision validation</li>
+                        <li>Branch tracking</li>
+                        <li>Context awareness</li>
+                        <li>Progress monitoring</li>
+                    </ul>
+
+                    <h4>3. Structured Response Format</h4>
+                    <p>Consistent JSON responses with metadata:</p>
+                    <div class="code-block">
+                        <pre><code>interface ThoughtResponse {
+  thoughtNumber: number;
+  totalThoughts: number;
+  nextThoughtNeeded: boolean;
+  branches: string[];
+  thoughtHistoryLength: number;
+  isRevision?: boolean;
+  revisesThought?: number;
+  branchId?: string;
+  branchFromThought?: number;
+  needsMoreThoughts?: boolean;
+}</code></pre>
+                    </div>
+
+                    <h2>Core Concepts</h2>
+
+                    <h3>Thought Processing</h3>
+                    <p>The framework processes thoughts through these stages:</p>
+                    <ol>
+                        <li><strong>Input Validation:</strong> Zod schema validation of all parameters</li>
+                        <li><strong>Revision Validation:</strong> Ensure revisions reference past thoughts</li>
+                        <li><strong>Branch Validation:</strong> Verify branch points are valid</li>
+                        <li><strong>Adaptive Planning:</strong> Adjust total thoughts dynamically</li>
+                        <li><strong>History Storage:</strong> Maintain ordered thought sequence</li>
+                        <li><strong>Response Generation:</strong> Create structured response with metadata</li>
+                        <li><strong>Console Logging:</strong> Format and display thought (if enabled)</li>
+                    </ol>
+
+                    <h3>Thought Revision</h3>
+                    <p>Revision mechanism allows reconsidering previous thoughts:</p>
+                    <ul>
+                        <li><strong>Validation:</strong> Ensures revised thought exists and is in the past</li>
+                        <li><strong>Context:</strong> Maintains connection to original thought</li>
+                        <li><strong>Tracking:</strong> Records revision relationships in history</li>
+                    </ul>
+
+                    <div class="alert alert-info">
+                        <strong>Example:</strong> If thought 4 needs revision at thought 7, set <code>isRevision: true</code> and <code>revisesThought: 4</code>
+                    </div>
+
+                    <h3>Branch Management</h3>
+                    <p>The framework supports exploring alternative solution paths:</p>
+                    <ul>
+                        <li><strong>Branch Point:</strong> Any thought can be a branching point</li>
+                        <li><strong>Branch ID:</strong> Unique identifier for each branch</li>
+                        <li><strong>Parallel Exploration:</strong> Multiple branches can coexist</li>
+                        <li><strong>Branch Tracking:</strong> Server maintains list of active branches</li>
+                    </ul>
+
+                    <h3>Adaptive Planning</h3>
+                    <p>Dynamic adjustment of thought count:</p>
+                    <ul>
+                        <li>Initial estimate can be adjusted up or down</li>
+                        <li>Automatic adjustment when thought number exceeds total</li>
+                        <li><code>needsMoreThoughts</code> flag for explicit expansion</li>
+                        <li>No penalty for underestimation or overestimation</li>
+                    </ul>
+
+                    <h2>Implementation Details</h2>
+
+                    <h3>Validation Logic</h3>
+                    <p>Three-tier validation ensures data integrity:</p>
+
+                    <div class="code-block">
+                        <pre><code>// 1. Schema Validation (Zod)
+const validatedInput = DeepmindSchema.parse(input);
+
+// 2. Revision Validation
+if (validatedInput.isRevision) {
+  if (!validatedInput.revisesThought) {
+    throw new Error("revisesThought required when isRevision is true");
+  }
+  if (validatedInput.revisesThought >= validatedInput.thoughtNumber) {
+    throw new Error("Can only revise past thoughts");
+  }
+}
+
+// 3. Branch Validation
+if (validatedInput.branchId && !validatedInput.branchFromThought) {
+  throw new Error("branchFromThought required when branchId is set");
+}</code></pre>
+                    </div>
+
+                    <h3>Thought History Management</h3>
+                    <p>Efficient in-memory storage with array-based history:</p>
+                    <ul>
+                        <li>Sequential append-only operations</li>
+                        <li>No deletions (immutable history)</li>
+                        <li>Fast access by index</li>
+                        <li>Branch tracking via separate set</li>
+                    </ul>
+
+                    <h3>Console Output Formatting</h3>
+                    <p>Colored, bordered output using Chalk and box-drawing characters:</p>
+                    <div class="code-block">
+                        <pre><code>┌─────────────────────────────────────┐
+│ Thought 1/8                         │
+├─────────────────────────────────────┤
+│ Analyzing requirements for platform │
+│ supporting 1M daily users           │
+└─────────────────────────────────────┘</code></pre>
+                    </div>
+
+                    <h2>Performance Considerations</h2>
+
+                    <h3>Memory Management</h3>
+                    <ul>
+                        <li><strong>Thought History:</strong> Grows linearly with reasoning depth</li>
+                        <li><strong>Branch Set:</strong> Minimal memory overhead for tracking</li>
+                        <li><strong>Recommendation:</strong> For very long chains (100+ thoughts), consider session breaks</li>
+                    </ul>
+
+                    <h3>Response Time</h3>
+                    <ul>
+                        <li><strong>Validation:</strong> O(1) - Constant time schema validation</li>
+                        <li><strong>Processing:</strong> O(1) - No complex computations</li>
+                        <li><strong>Formatting:</strong> O(n) where n is thought text length</li>
+                        <li><strong>Typical:</strong> Sub-millisecond processing time</li>
+                    </ul>
+
+                    <h3>Concurrency</h3>
+                    <ul>
+                        <li>Single-threaded Node.js event loop</li>
+                        <li>One reasoning chain per server instance</li>
+                        <li>Stateful design requires dedicated instances for parallel chains</li>
+                    </ul>
+
+                    <h2>Code Quality Standards</h2>
+
+                    <h3>TypeScript Configuration</h3>
+                    <p>Strict mode enabled for type safety:</p>
+                    <div class="code-block">
+                        <pre><code>{
+  "compilerOptions": {
+    "strict": true,
+    "noImplicitAny": true,
+    "strictNullChecks": true,
+    "strictFunctionTypes": true,
+    "strictBindCallApply": true,
+    "strictPropertyInitialization": true,
+    "noImplicitThis": true,
+    "alwaysStrict": true
+  }
+}</code></pre>
+                    </div>
+
+                    <h3>Testing Requirements</h3>
+                    <ul>
+                        <li>80%+ code coverage minimum</li>
+                        <li>Unit tests for all validation logic</li>
+                        <li>Integration tests for MCP protocol</li>
+                        <li>Edge case testing (invalid inputs, boundary conditions)</li>
+                    </ul>
+
+                    <h3>Code Style</h3>
+                    <ul>
+                        <li>ESLint with TypeScript rules</li>
+                        <li>Prettier for formatting (2 spaces, no tabs)</li>
+                        <li>JSDoc comments for public APIs</li>
+                        <li>Meaningful variable and function names</li>
+                    </ul>
+
+                    <h2>Build and Deployment</h2>
+
+                    <h3>Build Process</h3>
+                    <div class="code-block">
+                        <pre><code># Install dependencies
+npm ci
+
+# Type checking
+npx tsc --noEmit
+
+# Build
+npm run build
+
+# Output: dist/index.js (transpiled JavaScript)</code></pre>
+                    </div>
+
+                    <h3>Docker Build</h3>
+                    <p>Multi-stage build for optimized images:</p>
+                    <div class="code-block">
+                        <pre><code># Stage 1: Builder
+FROM node:22-alpine AS builder
+WORKDIR /app
+COPY package*.json tsconfig.json ./
+RUN npm ci --only=production
+COPY src ./src
+RUN npm run build
+
+# Stage 2: Runtime
+FROM node:22-alpine AS runtime
+WORKDIR /app
+COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/node_modules ./node_modules
+USER mcp
+ENTRYPOINT ["node", "dist/index.js"]</code></pre>
+                    </div>
+
+                    <h3>CI/CD Pipeline</h3>
+                    <p>GitHub Actions workflow:</p>
+                    <ul>
+                        <li><strong>Linting:</strong> ESLint checks on all commits</li>
+                        <li><strong>Type Checking:</strong> TypeScript compilation without emit</li>
+                        <li><strong>Testing:</strong> Jest with coverage reporting</li>
+                        <li><strong>Build:</strong> TypeScript compilation and verification</li>
+                        <li><strong>Docker:</strong> Image build and smoke test</li>
+                        <li><strong>Coverage:</strong> Codecov integration for tracking</li>
+                    </ul>
+
+                    <h2>Extension Points</h2>
+
+                    <h3>Custom Validators</h3>
+                    <p>Extend validation logic by adding custom validators:</p>
+                    <div class="code-block">
+                        <pre><code>validateCustomLogic(input: DeepmindInput): void {
+  // Add custom validation rules
+  if (input.thoughtNumber === 13 && input.branchId) {
+    throw new Error("Branch not allowed at thought 13");
+  }
+}</code></pre>
+                    </div>
+
+                    <h3>Alternative Output Formats</h3>
+                    <p>Customize console output or add new output channels:</p>
+                    <div class="code-block">
+                        <pre><code>formatThought(input: DeepmindInput): string {
+  // Custom formatting logic
+  return `[${input.thoughtNumber}/${input.totalThoughts}] ${input.thought}`;
+}</code></pre>
+                    </div>
+
+                    <h2>Best Practices</h2>
+
+                    <h3>For Framework Users</h3>
+                    <ul>
+                        <li>Start with conservative thought estimates</li>
+                        <li>Use revisions for significant insights</li>
+                        <li>Branch only when exploring truly different paths</li>
+                        <li>Keep thought descriptions concise but meaningful</li>
+                        <li>Monitor memory usage for very long chains</li>
+                    </ul>
+
+                    <h3>For Contributors</h3>
+                    <ul>
+                        <li>Maintain backward compatibility for the tool API</li>
+                        <li>Add tests for all new functionality</li>
+                        <li>Document public APIs with JSDoc</li>
+                        <li>Follow existing code patterns and style</li>
+                        <li>Update documentation with changes</li>
+                    </ul>
+
+                    <div class="alert alert-success">
+                        <strong>Contributing:</strong> See the <a href="https://github.com/darbotlabs/darbot-deepmind-mcp/blob/main/CONTRIBUTING.md" target="_blank">Contributing Guide</a> for detailed development instructions.
+                    </div>
+
+                    <h2>Next Steps</h2>
+                    <div class="docs-grid" style="margin-top: 2rem;">
+                        <a href="api-reference.html" class="doc-card">
+                            <h3>📖 API Reference</h3>
+                            <p>Complete parameter documentation</p>
+                        </a>
+                        <a href="configuration.html" class="doc-card">
+                            <h3>⚙️ Configuration</h3>
+                            <p>Setup and configuration options</p>
+                        </a>
+                        <a href="troubleshooting.html" class="doc-card">
+                            <h3>🔎 Troubleshooting</h3>
+                            <p>Common issues and solutions</p>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>About</h3>
+                    <p>Built with the <a href="https://modelcontextprotocol.io/" target="_blank">Model Context Protocol</a></p>
+                    <p>Made with ❤️ by <a href="https://github.com/darbotlabs" target="_blank">Darbot Labs</a></p>
+                </div>
+                <div class="footer-section">
+                    <h3>Resources</h3>
+                    <ul>
+                        <li><a href="https://github.com/darbotlabs/darbot-deepmind-mcp" target="_blank">GitHub Repository</a></li>
+                        <li><a href="https://www.npmjs.com/package/@darbotlabs/darbot-deepmind-mcp" target="_blank">npm Package</a></li>
+                        <li><a href="https://github.com/darbotlabs/darbot-deepmind-mcp/blob/main/CHANGELOG.md" target="_blank">Changelog</a></li>
+                        <li><a href="https://github.com/darbotlabs/darbot-deepmind-mcp/blob/main/LICENSE" target="_blank">License (MIT)</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h3>Technologies</h3>
+                    <ul>
+                        <li><a href="https://www.typescriptlang.org/" target="_blank">TypeScript</a></li>
+                        <li><a href="https://nodejs.org/" target="_blank">Node.js</a></li>
+                        <li><a href="https://github.com/chalk/chalk" target="_blank">Chalk</a></li>
+                        <li><a href="https://github.com/colinhacks/zod" target="_blank">Zod</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 Darbot Labs. Licensed under the MIT License.</p>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>

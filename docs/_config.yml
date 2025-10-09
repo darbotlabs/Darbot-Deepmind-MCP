@@ -1,0 +1,55 @@
+# Jekyll configuration for GitHub Pages
+title: Darbot Deepmind MCP Server
+description: Advanced AI reasoning capabilities through structured thinking framework
+url: "https://darbotlabs.github.io"
+baseurl: "/Darbot-Deepmind-MCP"
+
+# Build settings
+markdown: kramdown
+theme: null
+
+# Exclude from processing
+exclude:
+  - Gemfile
+  - Gemfile.lock
+  - node_modules
+  - vendor
+  - .sass-cache
+  - .jekyll-cache
+  - .git
+
+# Include files
+include:
+  - _config.yml
+
+# SEO and social
+author: Darbot Labs
+twitter:
+  username: darbotlabs
+  card: summary_large_image
+
+social:
+  name: Darbot Labs
+  links:
+    - https://github.com/darbotlabs
+
+logo: /Darbot-Deepmind-MCP/assets/images/logo.png
+
+# GitHub metadata
+repository: darbotlabs/Darbot-Deepmind-MCP
+github_username: darbotlabs
+
+# Google Analytics (optional - add your tracking ID)
+# google_analytics: UA-XXXXXXXXX-X
+
+# Plugins
+plugins:
+  - jekyll-seo-tag
+  - jekyll-sitemap
+
+# Defaults
+defaults:
+  - scope:
+      path: ""
+    values:
+      layout: default

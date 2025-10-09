@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Configuration guide for Darbot Deepmind MCP Server">
+    <title>Configuration - Darbot Deepmind MCP Server</title>
+    <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+    <header>
+        <nav class="navbar">
+            <div class="container">
+                <div class="nav-brand">
+                    <h1>🧠 Darbot Deepmind MCP</h1>
+                </div>
+                <ul class="nav-menu">
+                    <li><a href="index.html">Home</a></li>
+                    <li><a href="configuration.html">Configuration</a></li>
+                    <li><a href="framework.html">Framework</a></li>
+                    <li><a href="api-reference.html">API Reference</a></li>
+                    <li><a href="troubleshooting.html">Troubleshooting</a></li>
+                    <li><a href="https://github.com/darbotlabs/darbot-deepmind-mcp" target="_blank">GitHub</a></li>
+                </ul>
+            </div>
+        </nav>
+    </header>
+
+    <main>
+        <section class="section">
+            <div class="container">
+                <div class="breadcrumbs">
+                    <a href="index.html">Home</a>
+                    <span>/</span>
+                    <span>Configuration</span>
+                </div>
+
+                <div class="content">
+                    <h1>Configuration Guide</h1>
+                    <p>This guide covers all configuration options for the Darbot Deepmind MCP Server, including environment variables, client integrations, and setup procedures.</p>
+
+                    <h2>Environment Variables</h2>
+                    <p>Configure the server behavior using these environment variables:</p>
+
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Variable</th>
+                                <th>Default</th>
+                                <th>Description</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><code>DISABLE_THOUGHT_LOGGING</code></td>
+                                <td><code>false</code></td>
+                                <td>Set to <code>true</code> to disable detailed thought logging to console</td>
+                            </tr>
+                            <tr>
+                                <td><code>MCP_PORT</code></td>
+                                <td><code>3000</code></td>
+                                <td>Port for MCP server when running in standalone mode</td>
+                            </tr>
+                            <tr>
+                                <td><code>LOG_LEVEL</code></td>
+                                <td><code>info</code></td>
+                                <td>Logging level: <code>debug</code>, <code>info</code>, <code>warn</code>, <code>error</code></td>
+                            </tr>
+                            <tr>
+                                <td><code>NODE_ENV</code></td>
+                                <td><code>production</code></td>
+                                <td>Environment mode: <code>development</code>, <code>production</code>, <code>test</code></td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <h3>Setting Environment Variables</h3>
+
+                    <h4>Linux/macOS</h4>
+                    <div class="code-block">
+                        <pre><code>export DISABLE_THOUGHT_LOGGING=true
+export LOG_LEVEL=debug
+npm start</code></pre>
+                    </div>
+
+                    <h4>Windows Command Prompt</h4>
+                    <div class="code-block">
+                        <pre><code>set DISABLE_THOUGHT_LOGGING=true
+set LOG_LEVEL=debug
+npm start</code></pre>
+                    </div>
+
+                    <h4>Windows PowerShell</h4>
+                    <div class="code-block">
+                        <pre><code>$env:DISABLE_THOUGHT_LOGGING="true"
+$env:LOG_LEVEL="debug"
+npm start</code></pre>
+                    </div>
+
+                    <h2>Claude Desktop Integration</h2>
+                    <p>Configure Darbot Deepmind MCP in Claude Desktop by editing the configuration file:</p>
+
+                    <h3>Configuration File Location</h3>
+                    <ul>
+                        <li><strong>macOS:</strong> <code>~/Library/Application Support/Claude/claude_desktop_config.json</code></li>
+                        <li><strong>Windows:</strong> <code>%APPDATA%\Claude\claude_desktop_config.json</code></li>
+                        <li><strong>Linux:</strong> <code>~/.config/Claude/claude_desktop_config.json</code></li>
+                    </ul>
+
+                    <h3>NPX Configuration</h3>
+                    <div class="code-block">
+                        <pre><code>{
+  "mcpServers": {
+    "darbot-deepmind": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@darbotlabs/darbot-deepmind-mcp"
+      ]
+    }
+  }
+}</code></pre>
+                    </div>
+
+                    <h3>Docker Configuration</h3>
+                    <div class="code-block">
+                        <pre><code>{
+  "mcpServers": {
+    "darbot-deepmind": {
+      "command": "docker",
+      "args": [
+        "run",
+        "--rm",
+        "-i",
+        "mcp/darbot-deepmind"
+      ],
+      "env": {
+        "DISABLE_THOUGHT_LOGGING": "false"
+      }
+    }
+  }
+}</code></pre>
+                    </div>
+
+                    <h3>Local Development Configuration</h3>
+                    <div class="code-block">
+                        <pre><code>{
+  "mcpServers": {
+    "darbot-deepmind": {
+      "command": "node",
+      "args": [
+        "/path/to/darbot-deepmind-mcp/dist/index.js"
+      ],
+      "env": {
+        "DISABLE_THOUGHT_LOGGING": "false",
+        "LOG_LEVEL": "debug"
+      }
+    }
+  }
+}</code></pre>
+                    </div>
+
+                    <h2>VS Code Integration</h2>
+                    <p>Configure the server for VS Code's MCP support by creating or editing <code>.vscode/mcp.json</code>:</p>
+
+                    <h3>Quick Install</h3>
+                    <p>Click the badge below to install automatically:</p>
+                    <a href="https://insiders.vscode.dev/redirect/mcp/install?name=darbot-deepmind&config=%7B%22command%22%3A%22npx%22%2C%22args%22%3A%5B%22-y%22%2C%22%40darbotlabs%2Fdarbot-deepmind-mcp%22%5D%7D" target="_blank">
+                        <img src="https://img.shields.io/badge/VS_Code-Install_with_NPX-0098FF?style=flat-square&logo=visualstudiocode&logoColor=white" alt="Install with NPX in VS Code">
+                    </a>
+
+                    <h3>Manual Configuration</h3>
+                    <div class="code-block">
+                        <pre><code>{
+  "servers": {
+    "darbot-deepmind": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@darbotlabs/darbot-deepmind-mcp"
+      ]
+    }
+  }
+}</code></pre>
+                    </div>
+
+                    <h2>Docker Compose Setup</h2>
+                    <p>For containerized deployments, use Docker Compose:</p>
+
+                    <div class="code-block">
+                        <pre><code>version: '3.8'
+
+services:
+  darbot-deepmind:
+    image: mcp/darbot-deepmind
+    container_name: darbot-deepmind-mcp
+    environment:
+      - DISABLE_THOUGHT_LOGGING=false
+      - LOG_LEVEL=info
+    stdin_open: true
+    tty: false
+    restart: unless-stopped</code></pre>
+                    </div>
+
+                    <h3>Starting with Docker Compose</h3>
+                    <div class="code-block">
+                        <pre><code>docker-compose up -d darbot-deepmind</code></pre>
+                    </div>
+
+                    <h2>Advanced Configuration</h2>
+
+                    <h3>Custom Logging Configuration</h3>
+                    <p>For production deployments, you may want to configure custom logging:</p>
+
+                    <div class="code-block">
+                        <pre><code>{
+  "mcpServers": {
+    "darbot-deepmind": {
+      "command": "npx",
+      "args": ["-y", "@darbotlabs/darbot-deepmind-mcp"],
+      "env": {
+        "DISABLE_THOUGHT_LOGGING": "true",
+        "LOG_LEVEL": "warn"
+      }
+    }
+  }
+}</code></pre>
+                    </div>
+
+                    <h3>Memory and Performance Tuning</h3>
+                    <p>For handling complex reasoning chains, you can adjust Node.js memory limits:</p>
+
+                    <div class="code-block">
+                        <pre><code>{
+  "mcpServers": {
+    "darbot-deepmind": {
+      "command": "node",
+      "args": [
+        "--max-old-space-size=4096",
+        "/path/to/dist/index.js"
+      ]
+    }
+  }
+}</code></pre>
+                    </div>
+
+                    <h3>Development Mode</h3>
+                    <p>For development with hot-reloading:</p>
+
+                    <div class="code-block">
+                        <pre><code>{
+  "mcpServers": {
+    "darbot-deepmind": {
+      "command": "npm",
+      "args": ["run", "dev"],
+      "cwd": "/path/to/darbot-deepmind-mcp",
+      "env": {
+        "NODE_ENV": "development",
+        "LOG_LEVEL": "debug"
+      }
+    }
+  }
+}</code></pre>
+                    </div>
+
+                    <h2>Verification</h2>
+                    <p>After configuration, verify the setup:</p>
+
+                    <ol>
+                        <li>Restart Claude Desktop or VS Code</li>
+                        <li>Check for "darbot-deepmind" in available tools</li>
+                        <li>Test with a simple reasoning task</li>
+                        <li>Review logs for any errors</li>
+                    </ol>
+
+                    <div class="alert alert-info">
+                        <strong>Tip:</strong> Enable debug logging during initial setup to troubleshoot configuration issues.
+                    </div>
+
+                    <h2>Configuration Best Practices</h2>
+
+                    <ul>
+                        <li><strong>Use NPX for simplicity:</strong> The NPX method requires no local installation</li>
+                        <li><strong>Docker for isolation:</strong> Use Docker when you need environment isolation</li>
+                        <li><strong>Disable logging in production:</strong> Set <code>DISABLE_THOUGHT_LOGGING=true</code> for cleaner output</li>
+                        <li><strong>Version pinning:</strong> For production, consider pinning to a specific version</li>
+                        <li><strong>Monitor memory usage:</strong> For complex reasoning, monitor and adjust memory limits</li>
+                    </ul>
+
+                    <h2>Troubleshooting Configuration</h2>
+
+                    <h3>Server Not Detected</h3>
+                    <ul>
+                        <li>Verify JSON syntax in configuration files</li>
+                        <li>Check file paths are correct (especially on Windows)</li>
+                        <li>Ensure Node.js 18+ is installed</li>
+                        <li>Restart the MCP client after changes</li>
+                    </ul>
+
+                    <h3>Environment Variables Not Working</h3>
+                    <ul>
+                        <li>Ensure environment variables are defined in the <code>env</code> section</li>
+                        <li>Check for typos in variable names</li>
+                        <li>Verify the client supports environment variable passing</li>
+                        <li>Review server logs for loaded configuration</li>
+                    </ul>
+
+                    <div class="alert alert-warning">
+                        <strong>Note:</strong> On Windows, use forward slashes (/) or double backslashes (\\\\) in file paths within JSON configuration files.
+                    </div>
+
+                    <h2>Next Steps</h2>
+                    <div class="docs-grid" style="margin-top: 2rem;">
+                        <a href="framework.html" class="doc-card">
+                            <h3>🔧 Framework</h3>
+                            <p>Learn about the technical architecture</p>
+                        </a>
+                        <a href="api-reference.html" class="doc-card">
+                            <h3>📖 API Reference</h3>
+                            <p>Explore tool parameters and schemas</p>
+                        </a>
+                        <a href="troubleshooting.html" class="doc-card">
+                            <h3>🔎 Troubleshooting</h3>
+                            <p>Find solutions to common issues</p>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>About</h3>
+                    <p>Built with the <a href="https://modelcontextprotocol.io/" target="_blank">Model Context Protocol</a></p>
+                    <p>Made with ❤️ by <a href="https://github.com/darbotlabs" target="_blank">Darbot Labs</a></p>
+                </div>
+                <div class="footer-section">
+                    <h3>Resources</h3>
+                    <ul>
+                        <li><a href="https://github.com/darbotlabs/darbot-deepmind-mcp" target="_blank">GitHub Repository</a></li>
+                        <li><a href="https://www.npmjs.com/package/@darbotlabs/darbot-deepmind-mcp" target="_blank">npm Package</a></li>
+                        <li><a href="https://github.com/darbotlabs/darbot-deepmind-mcp/blob/main/CHANGELOG.md" target="_blank">Changelog</a></li>
+                        <li><a href="https://github.com/darbotlabs/darbot-deepmind-mcp/blob/main/LICENSE" target="_blank">License (MIT)</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h3>Technologies</h3>
+                    <ul>
+                        <li><a href="https://www.typescriptlang.org/" target="_blank">TypeScript</a></li>
+                        <li><a href="https://nodejs.org/" target="_blank">Node.js</a></li>
+                        <li><a href="https://github.com/chalk/chalk" target="_blank">Chalk</a></li>
+                        <li><a href="https://github.com/colinhacks/zod" target="_blank">Zod</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 Darbot Labs. Licensed under the MIT License.</p>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>

@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="API Reference for Darbot Deepmind MCP Server">
+    <title>API Reference - Darbot Deepmind MCP Server</title>
+    <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+    <header>
+        <nav class="navbar">
+            <div class="container">
+                <div class="nav-brand">
+                    <h1>🧠 Darbot Deepmind MCP</h1>
+                </div>
+                <ul class="nav-menu">
+                    <li><a href="index.html">Home</a></li>
+                    <li><a href="configuration.html">Configuration</a></li>
+                    <li><a href="framework.html">Framework</a></li>
+                    <li><a href="api-reference.html">API Reference</a></li>
+                    <li><a href="troubleshooting.html">Troubleshooting</a></li>
+                    <li><a href="https://github.com/darbotlabs/darbot-deepmind-mcp" target="_blank">GitHub</a></li>
+                </ul>
+            </div>
+        </nav>
+    </header>
+
+    <main>
+        <section class="section">
+            <div class="container">
+                <div class="breadcrumbs">
+                    <a href="index.html">Home</a>
+                    <span>/</span>
+                    <span>API Reference</span>
+                </div>
+
+                <div class="content">
+                    <h1>API Reference</h1>
+                    <p>Complete reference documentation for the Darbot Deepmind MCP Server tool and its parameters.</p>
+
+                    <h2>Tool: darbot_deepmind</h2>
+                    <p>The primary tool for sophisticated, step-by-step reasoning through Darbot's deepmind thinking framework.</p>
+
+                    <h3>Description</h3>
+                    <p>This tool facilitates complex problem-solving and analysis through a structured thinking process. It supports dynamic thought revision, multi-path reasoning with branching logic, and adaptive planning that adjusts based on problem complexity.</p>
+
+                    <h3>Parameters</h3>
+
+                    <h4>Required Parameters</h4>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Parameter</th>
+                                <th>Type</th>
+                                <th>Description</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><code>thought</code></td>
+                                <td>string</td>
+                                <td>The current thinking step. Can include analytical steps, revisions, questions, realizations, approach changes, hypothesis generation, or verification.</td>
+                            </tr>
+                            <tr>
+                                <td><code>nextThoughtNeeded</code></td>
+                                <td>boolean</td>
+                                <td>Indicates whether another thought step is needed. Set to <code>false</code> only when truly done with a satisfactory answer.</td>
+                            </tr>
+                            <tr>
+                                <td><code>thoughtNumber</code></td>
+                                <td>integer</td>
+                                <td>Current thought number in the sequence (starting from 1). Can exceed initial <code>totalThoughts</code> if more analysis is needed.</td>
+                            </tr>
+                            <tr>
+                                <td><code>totalThoughts</code></td>
+                                <td>integer</td>
+                                <td>Current estimate of total thoughts needed. Can be adjusted up or down as problem complexity becomes clearer.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <h4>Optional Parameters</h4>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Parameter</th>
+                                <th>Type</th>
+                                <th>Description</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><code>isRevision</code></td>
+                                <td>boolean</td>
+                                <td>Set to <code>true</code> if this thought revises or reconsiders previous thinking. Requires <code>revisesThought</code> parameter.</td>
+                            </tr>
+                            <tr>
+                                <td><code>revisesThought</code></td>
+                                <td>integer</td>
+                                <td>Specifies which thought number is being reconsidered. Must be less than current <code>thoughtNumber</code>. Required when <code>isRevision</code> is <code>true</code>.</td>
+                            </tr>
+                            <tr>
+                                <td><code>branchFromThought</code></td>
+                                <td>integer</td>
+                                <td>The thought number where this branch diverges from the main reasoning path. Used for exploring alternative solution approaches.</td>
+                            </tr>
+                            <tr>
+                                <td><code>branchId</code></td>
+                                <td>string</td>
+                                <td>Unique identifier for this reasoning branch (e.g., "serverless-approach", "database-optimization"). Helps track multiple solution paths.</td>
+                            </tr>
+                            <tr>
+                                <td><code>needsMoreThoughts</code></td>
+                                <td>boolean</td>
+                                <td>Explicitly signals that more thoughts are needed beyond the current estimate. Useful when reaching the end but realizing more analysis is required.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <h3>Response Format</h3>
+                    <p>The tool returns a structured JSON response with the following fields:</p>
+
+                    <div class="code-block">
+                        <pre><code>{
+  "thoughtNumber": 5,
+  "totalThoughts": 10,
+  "nextThoughtNeeded": true,
+  "branches": ["serverless-approach", "microservices-approach"],
+  "thoughtHistoryLength": 5,
+  "isRevision": false,
+  "branchId": "serverless-approach",
+  "branchFromThought": 3
+}</code></pre>
+                    </div>
+
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Field</th>
+                                <th>Type</th>
+                                <th>Description</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><code>thoughtNumber</code></td>
+                                <td>integer</td>
+                                <td>Echo of the current thought number</td>
+                            </tr>
+                            <tr>
+                                <td><code>totalThoughts</code></td>
+                                <td>integer</td>
+                                <td>Current estimate of total thoughts (adjusted if needed)</td>
+                            </tr>
+                            <tr>
+                                <td><code>nextThoughtNeeded</code></td>
+                                <td>boolean</td>
+                                <td>Whether more reasoning steps are needed</td>
+                            </tr>
+                            <tr>
+                                <td><code>branches</code></td>
+                                <td>string[]</td>
+                                <td>Array of all branch IDs encountered in this reasoning session</td>
+                            </tr>
+                            <tr>
+                                <td><code>thoughtHistoryLength</code></td>
+                                <td>integer</td>
+                                <td>Total number of thoughts processed so far</td>
+                            </tr>
+                            <tr>
+                                <td><code>isRevision</code></td>
+                                <td>boolean?</td>
+                                <td>Present if this was a revision thought</td>
+                            </tr>
+                            <tr>
+                                <td><code>revisesThought</code></td>
+                                <td>integer?</td>
+                                <td>Present if this was a revision, indicates which thought was revised</td>
+                            </tr>
+                            <tr>
+                                <td><code>branchId</code></td>
+                                <td>string?</td>
+                                <td>Present if this thought is part of a branch</td>
+                            </tr>
+                            <tr>
+                                <td><code>branchFromThought</code></td>
+                                <td>integer?</td>
+                                <td>Present if this thought is part of a branch, indicates the branching point</td>
+                            </tr>
+                            <tr>
+                                <td><code>needsMoreThoughts</code></td>
+                                <td>boolean?</td>
+                                <td>Present if explicitly signaled</td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <h3>Usage Examples</h3>
+
+                    <h4>Example 1: Basic Sequential Reasoning</h4>
+                    <div class="code-block">
+                        <pre><code>// First thought
+{
+  "thought": "Analyzing requirements for e-commerce platform",
+  "nextThoughtNeeded": true,
+  "thoughtNumber": 1,
+  "totalThoughts": 8
+}
+
+// Second thought
+{
+  "thought": "Identifying key scalability challenges",
+  "nextThoughtNeeded": true,
+  "thoughtNumber": 2,
+  "totalThoughts": 8
+}</code></pre>
+                    </div>
+
+                    <h4>Example 2: Revising Previous Thinking</h4>
+                    <div class="code-block">
+                        <pre><code>{
+  "thought": "Revising database choice - NoSQL better for this use case",
+  "nextThoughtNeeded": true,
+  "thoughtNumber": 6,
+  "totalThoughts": 10,
+  "isRevision": true,
+  "revisesThought": 3
+}</code></pre>
+                    </div>
+
+                    <h4>Example 3: Branching to Explore Alternatives</h4>
+                    <div class="code-block">
+                        <pre><code>{
+  "thought": "Exploring serverless architecture as alternative",
+  "nextThoughtNeeded": true,
+  "thoughtNumber": 7,
+  "totalThoughts": 12,
+  "branchFromThought": 4,
+  "branchId": "serverless-alternative"
+}</code></pre>
+                    </div>
+
+                    <h4>Example 4: Adjusting Scope</h4>
+                    <div class="code-block">
+                        <pre><code>{
+  "thought": "Realizing this requires more detailed security analysis",
+  "nextThoughtNeeded": true,
+  "thoughtNumber": 8,
+  "totalThoughts": 15,
+  "needsMoreThoughts": true
+}</code></pre>
+                    </div>
+
+                    <h4>Example 5: Final Thought</h4>
+                    <div class="code-block">
+                        <pre><code>{
+  "thought": "Conclusion: Microservices with event-driven architecture",
+  "nextThoughtNeeded": false,
+  "thoughtNumber": 12,
+  "totalThoughts": 12
+}</code></pre>
+                    </div>
+
+                    <h2>Validation Rules</h2>
+
+                    <h3>Schema Validation</h3>
+                    <ul>
+                        <li><code>thought</code> must be a non-empty string</li>
+                        <li><code>thoughtNumber</code> must be a positive integer</li>
+                        <li><code>totalThoughts</code> must be a positive integer</li>
+                        <li><code>revisesThought</code> (if present) must be a positive integer</li>
+                        <li><code>branchFromThought</code> (if present) must be a positive integer</li>
+                    </ul>
+
+                    <h3>Business Logic Validation</h3>
+                    <ul>
+                        <li>If <code>isRevision</code> is true, <code>revisesThought</code> must be provided</li>
+                        <li><code>revisesThought</code> must be less than <code>thoughtNumber</code></li>
+                        <li>If <code>branchId</code> is provided, <code>branchFromThought</code> should be provided</li>
+                        <li><code>thoughtNumber</code> cannot be greater than <code>totalThoughts</code> (server auto-adjusts if needed)</li>
+                    </ul>
+
+                    <h3>Error Responses</h3>
+                    <p>When validation fails, the tool returns an error response:</p>
+
+                    <div class="code-block">
+                        <pre><code>{
+  "error": "Validation error: revisesThought must be less than thoughtNumber",
+  "status": "failed"
+}</code></pre>
+                    </div>
+
+                    <h2>Reasoning Guidelines</h2>
+
+                    <h3>When to Use Revisions</h3>
+                    <ul>
+                        <li>New information invalidates previous assumptions</li>
+                        <li>Discovered a flaw in earlier reasoning</li>
+                        <li>Need to reconsider a decision with additional context</li>
+                        <li>Realized a better approach after further analysis</li>
+                    </ul>
+
+                    <h3>When to Use Branches</h3>
+                    <ul>
+                        <li>Exploring fundamentally different solution approaches</li>
+                        <li>Comparing trade-offs between alternatives</li>
+                        <li>Investigating multiple hypotheses in parallel</li>
+                        <li>Examining what-if scenarios</li>
+                    </ul>
+
+                    <h3>When to Adjust Total Thoughts</h3>
+                    <ul>
+                        <li>Problem is more complex than initially estimated</li>
+                        <li>Found solution faster than expected</li>
+                        <li>Scope of analysis has changed</li>
+                        <li>New requirements emerged during reasoning</li>
+                    </ul>
+
+                    <div class="alert alert-info">
+                        <strong>Best Practice:</strong> Start with a conservative estimate and adjust as needed. The framework is designed to handle dynamic changes gracefully.
+                    </div>
+
+                    <h2>Thought Content Best Practices</h2>
+
+                    <h3>Good Thought Examples</h3>
+                    <div class="code-block">
+                        <pre><code>✓ "Analyzing database options: PostgreSQL vs MongoDB"
+✓ "Security concern: Need to address authentication flow"
+✓ "Trade-off: Consistency vs availability in distributed system"
+✓ "Hypothesis: Caching layer will reduce latency by 50%"</code></pre>
+                    </div>
+
+                    <h3>Avoid</h3>
+                    <div class="code-block">
+                        <pre><code>✗ "Thinking..."
+✗ "Next step"
+✗ "Continuing analysis"
+✗ "" (empty thoughts)</code></pre>
+                    </div>
+
+                    <h3>Thought Content Guidelines</h3>
+                    <ul>
+                        <li>Be specific about what you're analyzing or deciding</li>
+                        <li>Include key insights, not just process statements</li>
+                        <li>Reference concrete details when relevant</li>
+                        <li>State hypotheses clearly when generating them</li>
+                        <li>Note important trade-offs or constraints</li>
+                    </ul>
+
+                    <h2>Integration Examples</h2>
+
+                    <h3>JavaScript/TypeScript</h3>
+                    <div class="code-block">
+                        <pre><code>const response = await callTool("darbot_deepmind", {
+  thought: "Analyzing system architecture requirements",
+  nextThoughtNeeded: true,
+  thoughtNumber: 1,
+  totalThoughts: 10
+});
+
+console.log(response.thoughtHistoryLength); // 1
+console.log(response.branches); // []</code></pre>
+                    </div>
+
+                    <h3>Python (Pseudo-code)</h3>
+                    <div class="code-block">
+                        <pre><code>response = mcp_client.call_tool(
+    "darbot_deepmind",
+    {
+        "thought": "Analyzing system architecture requirements",
+        "nextThoughtNeeded": True,
+        "thoughtNumber": 1,
+        "totalThoughts": 10
+    }
+)
+
+print(response["thoughtHistoryLength"])  # 1
+print(response["branches"])  # []</code></pre>
+                    </div>
+
+                    <h2>Performance Notes</h2>
+
+                    <h3>Memory Usage</h3>
+                    <ul>
+                        <li>Each thought stored in memory (~1KB average)</li>
+                        <li>100 thoughts ≈ 100KB memory</li>
+                        <li>Branch tracking adds minimal overhead</li>
+                        <li>Consider session breaks for very long chains (1000+ thoughts)</li>
+                    </ul>
+
+                    <h3>Response Time</h3>
+                    <ul>
+                        <li>Typical response time: &lt;5ms</li>
+                        <li>Validation: O(1) complexity</li>
+                        <li>Logging adds ~2-3ms when enabled</li>
+                        <li>Network latency dominates total time</li>
+                    </ul>
+
+                    <h2>Troubleshooting</h2>
+
+                    <h3>Common Errors</h3>
+
+                    <h4>Validation Error: thought must be non-empty</h4>
+                    <p><strong>Cause:</strong> Empty or missing thought parameter</p>
+                    <p><strong>Solution:</strong> Provide a meaningful description of the current thinking step</p>
+
+                    <h4>Validation Error: revisesThought must be less than thoughtNumber</h4>
+                    <p><strong>Cause:</strong> Attempting to revise a future or current thought</p>
+                    <p><strong>Solution:</strong> Only revise past thoughts (revisesThought &lt; thoughtNumber)</p>
+
+                    <h4>Validation Error: revisesThought required when isRevision is true</h4>
+                    <p><strong>Cause:</strong> Set isRevision to true without specifying which thought to revise</p>
+                    <p><strong>Solution:</strong> Include the revisesThought parameter</p>
+
+                    <div class="alert alert-warning">
+                        <strong>Note:</strong> See the <a href="troubleshooting.html">Troubleshooting Guide</a> for more detailed solutions to common issues.
+                    </div>
+
+                    <h2>Next Steps</h2>
+                    <div class="docs-grid" style="margin-top: 2rem;">
+                        <a href="configuration.html" class="doc-card">
+                            <h3>⚙️ Configuration</h3>
+                            <p>Setup and integration guides</p>
+                        </a>
+                        <a href="framework.html" class="doc-card">
+                            <h3>🔧 Framework</h3>
+                            <p>Technical architecture details</p>
+                        </a>
+                        <a href="troubleshooting.html" class="doc-card">
+                            <h3>🔎 Troubleshooting</h3>
+                            <p>Solutions to common problems</p>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>About</h3>
+                    <p>Built with the <a href="https://modelcontextprotocol.io/" target="_blank">Model Context Protocol</a></p>
+                    <p>Made with ❤️ by <a href="https://github.com/darbotlabs" target="_blank">Darbot Labs</a></p>
+                </div>
+                <div class="footer-section">
+                    <h3>Resources</h3>
+                    <ul>
+                        <li><a href="https://github.com/darbotlabs/darbot-deepmind-mcp" target="_blank">GitHub Repository</a></li>
+                        <li><a href="https://www.npmjs.com/package/@darbotlabs/darbot-deepmind-mcp" target="_blank">npm Package</a></li>
+                        <li><a href="https://github.com/darbotlabs/darbot-deepmind-mcp/blob/main/CHANGELOG.md" target="_blank">Changelog</a></li>
+                        <li><a href="https://github.com/darbotlabs/darbot-deepmind-mcp/blob/main/LICENSE" target="_blank">License (MIT)</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h3>Technologies</h3>
+                    <ul>
+                        <li><a href="https://www.typescriptlang.org/" target="_blank">TypeScript</a></li>
+                        <li><a href="https://nodejs.org/" target="_blank">Node.js</a></li>
+                        <li><a href="https://github.com/chalk/chalk" target="_blank">Chalk</a></li>
+                        <li><a href="https://github.com/colinhacks/zod" target="_blank">Zod</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 Darbot Labs. Licensed under the MIT License.</p>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>

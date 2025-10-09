@@ -76,7 +76,7 @@
   "bugs": {
     "url": "https://github.com/darbotlabs/darbot-deepmind-mcp/issues"
   },
-  "homepage": "https://github.com/darbotlabs/darbot-deepmind-mcp#readme",
+  "homepage": "https://darbotlabs.github.io/Darbot-Deepmind-MCP/",
   "publishConfig": {
     "access": "public",
     "registry": "https://registry.npmjs.org/"

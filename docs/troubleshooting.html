@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Troubleshooting guide for Darbot Deepmind MCP Server">
+    <title>Troubleshooting - Darbot Deepmind MCP Server</title>
+    <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+    <header>
+        <nav class="navbar">
+            <div class="container">
+                <div class="nav-brand">
+                    <h1>🧠 Darbot Deepmind MCP</h1>
+                </div>
+                <ul class="nav-menu">
+                    <li><a href="index.html">Home</a></li>
+                    <li><a href="configuration.html">Configuration</a></li>
+                    <li><a href="framework.html">Framework</a></li>
+                    <li><a href="api-reference.html">API Reference</a></li>
+                    <li><a href="troubleshooting.html">Troubleshooting</a></li>
+                    <li><a href="https://github.com/darbotlabs/darbot-deepmind-mcp" target="_blank">GitHub</a></li>
+                </ul>
+            </div>
+        </nav>
+    </header>
+
+    <main>
+        <section class="section">
+            <div class="container">
+                <div class="breadcrumbs">
+                    <a href="index.html">Home</a>
+                    <span>/</span>
+                    <span>Troubleshooting</span>
+                </div>
+
+                <div class="content">
+                    <h1>Troubleshooting Guide</h1>
+                    <p>Common issues and solutions for the Darbot Deepmind MCP Server. Find quick fixes for installation, configuration, and runtime problems.</p>
+
+                    <h2>Quick Diagnostics</h2>
+                    <div class="alert alert-info">
+                        <strong>Before troubleshooting:</strong> Enable debug mode by setting <code>LOG_LEVEL=debug</code> and <code>DISABLE_THOUGHT_LOGGING=false</code> for detailed output.
+                    </div>
+
+                    <h2>1. Server Not Starting</h2>
+
+                    <h3>Symptom</h3>
+                    <p>The server fails to start or immediately exits without error messages.</p>
+
+                    <h3>Possible Causes & Solutions</h3>
+
+                    <h4>Node.js Version Issue</h4>
+                    <div class="code-block">
+                        <pre><code># Check Node.js version
+node --version
+
+# Should be 18.0.0 or higher
+# If not, install/update Node.js from nodejs.org</code></pre>
+                    </div>
+
+                    <h4>Port Already in Use</h4>
+                    <div class="code-block">
+                        <pre><code># Windows
+netstat -an | findstr 3000
+
+# macOS/Linux
+lsof -i :3000
+
+# If port is in use, kill the process or change MCP_PORT</code></pre>
+                    </div>
+
+                    <h4>Missing Dependencies</h4>
+                    <div class="code-block">
+                        <pre><code># Reinstall dependencies
+rm -rf node_modules package-lock.json
+npm install</code></pre>
+                    </div>
+
+                    <h4>Build Artifacts Missing</h4>
+                    <div class="code-block">
+                        <pre><code># Rebuild the project
+npm run clean
+npm run build</code></pre>
+                    </div>
+
+                    <h2>2. Tool Not Discovered</h2>
+
+                    <h3>Symptom</h3>
+                    <p>Claude Desktop or VS Code shows "0 tools discovered" or the darbot_deepmind tool is not available.</p>
+
+                    <h3>Solutions</h3>
+
+                    <h4>Verify Configuration File</h4>
+                    <p>Check JSON syntax and file paths:</p>
+                    <div class="code-block">
+                        <pre><code># macOS
+cat ~/Library/Application\ Support/Claude/claude_desktop_config.json
+
+# Windows
+type %APPDATA%\Claude\claude_desktop_config.json
+
+# Linux
+cat ~/.config/Claude/claude_desktop_config.json</code></pre>
+                    </div>
+
+                    <div class="alert alert-warning">
+                        <strong>Common mistake:</strong> On Windows, use forward slashes (/) or double backslashes (\\\\) in JSON paths, not single backslashes (\).
+                    </div>
+
+                    <h4>Restart MCP Client</h4>
+                    <ul>
+                        <li><strong>Claude Desktop:</strong> Completely quit and restart the application</li>
+                        <li><strong>VS Code:</strong> Reload window (Ctrl+R or Cmd+R)</li>
+                    </ul>
+
+                    <h4>Verify Server Process</h4>
+                    <div class="code-block">
+                        <pre><code># Windows
+tasklist | findstr node
+
+# macOS/Linux
+ps aux | grep darbot</code></pre>
+                    </div>
+
+                    <h4>Check MCP Protocol Version</h4>
+                    <p>Ensure your MCP client supports protocol version 0.5.0 or compatible.</p>
+
+                    <h2>3. Thought Logging Issues</h2>
+
+                    <h3>Too Much Console Output</h3>
+                    <div class="code-block">
+                        <pre><code># Disable thought logging
+export DISABLE_THOUGHT_LOGGING=true
+
+# Windows PowerShell
+$env:DISABLE_THOUGHT_LOGGING="true"</code></pre>
+                    </div>
+
+                    <h3>No Console Output at All</h3>
+                    <div class="code-block">
+                        <pre><code># Enable thought logging
+export DISABLE_THOUGHT_LOGGING=false
+export LOG_LEVEL=debug
+
+# Windows PowerShell
+$env:DISABLE_THOUGHT_LOGGING="false"
+$env:LOG_LEVEL="debug"</code></pre>
+                    </div>
+
+                    <h3>Garbled or Broken Formatting</h3>
+                    <ul>
+                        <li>Check terminal supports UTF-8 encoding</li>
+                        <li>Use a modern terminal (Windows Terminal, iTerm2, etc.)</li>
+                        <li>Verify Chalk color support with <code>supports-color</code></li>
+                    </ul>
+
+                    <h2>4. Docker Container Issues</h2>
+
+                    <h3>Container Exits Immediately</h3>
+                    <div class="code-block">
+                        <pre><code># Check Docker daemon
+docker info
+
+# View container logs
+docker logs &lt;container-id&gt;
+
+# Run in interactive mode for debugging
+docker run -it --rm mcp/darbot-deepmind</code></pre>
+                    </div>
+
+                    <h3>Build Failures</h3>
+                    <div class="code-block">
+                        <pre><code># Clean build
+docker system prune -a
+docker build --no-cache -t mcp/darbot-deepmind .</code></pre>
+                    </div>
+
+                    <h3>Memory Limits</h3>
+                    <div class="code-block">
+                        <pre><code># Increase Docker memory
+docker run --rm -i --memory=2g mcp/darbot-deepmind</code></pre>
+                    </div>
+
+                    <h2>5. NPX Installation Failures</h2>
+
+                    <h3>NPX Command Hangs</h3>
+                    <div class="code-block">
+                        <pre><code># Clear npm cache
+npm cache clean --force
+
+# Use explicit registry
+npx --registry https://registry.npmjs.org/ -y @darbotlabs/darbot-deepmind-mcp</code></pre>
+                    </div>
+
+                    <h3>Network/Proxy Issues</h3>
+                    <div class="code-block">
+                        <pre><code># Configure npm proxy
+npm config set proxy http://proxy.company.com:8080
+npm config set https-proxy http://proxy.company.com:8080
+
+# Or use local installation instead
+npm install -g @darbotlabs/darbot-deepmind-mcp</code></pre>
+                    </div>
+
+                    <h3>Version Mismatch</h3>
+                    <div class="code-block">
+                        <pre><code># Check npm version (need 7+)
+npm --version
+
+# Update npm
+npm install -g npm@latest</code></pre>
+                    </div>
+
+                    <h2>6. Memory or Performance Issues</h2>
+
+                    <h3>Server Becomes Slow</h3>
+                    <p>For very long reasoning chains (100+ thoughts):</p>
+                    <div class="code-block">
+                        <pre><code># Increase Node.js memory
+node --max-old-space-size=4096 dist/index.js</code></pre>
+                    </div>
+
+                    <h3>Memory Leaks</h3>
+                    <ul>
+                        <li>Break very long reasoning into smaller sessions</li>
+                        <li>Restart server periodically for long-running instances</li>
+                        <li>Monitor memory with <code>htop</code> or Task Manager</li>
+                    </ul>
+
+                    <h3>Performance Optimization</h3>
+                    <ul>
+                        <li>Disable logging: <code>DISABLE_THOUGHT_LOGGING=true</code></li>
+                        <li>Set log level to warn: <code>LOG_LEVEL=warn</code></li>
+                        <li>Use production mode: <code>NODE_ENV=production</code></li>
+                    </ul>
+
+                    <h2>7. Configuration Not Loading</h2>
+
+                    <h3>Validate JSON Syntax</h3>
+                    <div class="code-block">
+                        <pre><code># Use online JSON validator or
+cat config.json | python -m json.tool</code></pre>
+                    </div>
+
+                    <h3>Environment Variables Not Working</h3>
+                    <p>Ensure environment variables are defined in the <code>env</code> section of your MCP configuration:</p>
+                    <div class="code-block">
+                        <pre><code>{
+  "mcpServers": {
+    "darbot-deepmind": {
+      "command": "npx",
+      "args": ["-y", "@darbotlabs/darbot-deepmind-mcp"],
+      "env": {
+        "DISABLE_THOUGHT_LOGGING": "true"
+      }
+    }
+  }
+}</code></pre>
+                    </div>
+
+                    <h3>File Path Issues (Windows)</h3>
+                    <div class="code-block">
+                        <pre><code>// Wrong (single backslash)
+"C:\Users\Name\path"
+
+// Correct (forward slash)
+"C:/Users/Name/path"
+
+// Also correct (escaped backslash)
+"C:\\Users\\Name\\path"</code></pre>
+                    </div>
+
+                    <h2>8. TypeScript Compilation Errors</h2>
+
+                    <h3>Type Errors</h3>
+                    <div class="code-block">
+                        <pre><code># Check TypeScript version
+npx tsc --version
+
+# Clean build
+rm -rf dist
+npm run build</code></pre>
+                    </div>
+
+                    <h3>Module Not Found</h3>
+                    <div class="code-block">
+                        <pre><code># Reinstall dependencies
+rm -rf node_modules
+npm install
+
+# Check tsconfig.json paths</code></pre>
+                    </div>
+
+                    <h3>Build Cache Issues</h3>
+                    <div class="code-block">
+                        <pre><code># Clear TypeScript build cache
+npm run clean
+npm run build</code></pre>
+                    </div>
+
+                    <h2>9. Permission Issues (Linux/macOS)</h2>
+
+                    <h3>Permission Denied Errors</h3>
+                    <div class="code-block">
+                        <pre><code># Make scripts executable
+chmod +x dist/*.js
+
+# Fix file ownership
+sudo chown -R $USER:$USER /path/to/darbot-deepmind-mcp</code></pre>
+                    </div>
+
+                    <h3>Global Installation Issues</h3>
+                    <div class="code-block">
+                        <pre><code># Use nvm (recommended)
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.0/install.sh | bash
+nvm install 18
+nvm use 18
+
+# Or fix npm permissions
+mkdir ~/.npm-global
+npm config set prefix '~/.npm-global'
+echo 'export PATH=~/.npm-global/bin:$PATH' >> ~/.bashrc
+source ~/.bashrc</code></pre>
+                    </div>
+
+                    <h2>Debug Mode</h2>
+
+                    <h3>Enable Full Debugging</h3>
+                    <div class="code-block">
+                        <pre><code># Linux/macOS
+export LOG_LEVEL=debug
+export DISABLE_THOUGHT_LOGGING=false
+npm start
+
+# Windows PowerShell
+$env:LOG_LEVEL="debug"
+$env:DISABLE_THOUGHT_LOGGING="false"
+npm start</code></pre>
+                    </div>
+
+                    <h3>Collecting Debug Information</h3>
+                    <p>When reporting issues, include:</p>
+                    <ul>
+                        <li>Operating system and version</li>
+                        <li>Node.js version (<code>node --version</code>)</li>
+                        <li>npm version (<code>npm --version</code>)</li>
+                        <li>Package version (<code>npm list @darbotlabs/darbot-deepmind-mcp</code>)</li>
+                        <li>Complete error messages</li>
+                        <li>Configuration files (redacted if necessary)</li>
+                        <li>Steps to reproduce</li>
+                    </ul>
+
+                    <h2>Common Validation Errors</h2>
+
+                    <h3>Error: thought must be non-empty</h3>
+                    <p><strong>Cause:</strong> Empty or missing thought parameter</p>
+                    <p><strong>Fix:</strong> Provide a meaningful thought description</p>
+
+                    <h3>Error: revisesThought must be less than thoughtNumber</h3>
+                    <p><strong>Cause:</strong> Trying to revise a future or current thought</p>
+                    <p><strong>Fix:</strong> Only revise past thoughts (revisesThought &lt; thoughtNumber)</p>
+
+                    <h3>Error: revisesThought required when isRevision is true</h3>
+                    <p><strong>Cause:</strong> Set isRevision without specifying which thought</p>
+                    <p><strong>Fix:</strong> Include the <code>revisesThought</code> parameter</p>
+
+                    <h3>Error: branchFromThought required when branchId is set</h3>
+                    <p><strong>Cause:</strong> Provided branchId without branching point</p>
+                    <p><strong>Fix:</strong> Specify <code>branchFromThought</code> parameter</p>
+
+                    <h2>Getting Help</h2>
+
+                    <h3>Check Existing Issues</h3>
+                    <p>Search the <a href="https://github.com/darbotlabs/darbot-deepmind-mcp/issues" target="_blank">GitHub Issues</a> for similar problems.</p>
+
+                    <h3>Create a Minimal Reproduction</h3>
+                    <p>Isolate the issue to the smallest possible test case that demonstrates the problem.</p>
+
+                    <h3>File a Bug Report</h3>
+                    <p>If you can't find a solution, <a href="https://github.com/darbotlabs/darbot-deepmind-mcp/issues/new" target="_blank">open a new issue</a> with:</p>
+                    <ul>
+                        <li>Clear description of the problem</li>
+                        <li>Steps to reproduce</li>
+                        <li>Expected vs actual behavior</li>
+                        <li>Environment details</li>
+                        <li>Debug logs (with sensitive info redacted)</li>
+                    </ul>
+
+                    <div class="alert alert-success">
+                        <strong>Community Support:</strong> Join the discussions and help others troubleshoot their issues on <a href="https://github.com/darbotlabs/darbot-deepmind-mcp/discussions" target="_blank">GitHub Discussions</a>.
+                    </div>
+
+                    <h2>Prevention Tips</h2>
+
+                    <h3>Best Practices</h3>
+                    <ul>
+                        <li>Keep Node.js and npm updated</li>
+                        <li>Use version pinning for production deployments</li>
+                        <li>Test configuration changes in development first</li>
+                        <li>Enable debug logging during initial setup</li>
+                        <li>Monitor memory usage for long-running instances</li>
+                        <li>Regularly check for package updates</li>
+                        <li>Keep Docker images up to date</li>
+                    </ul>
+
+                    <h3>Health Checks</h3>
+                    <div class="code-block">
+                        <pre><code># Verify installation
+npm list @darbotlabs/darbot-deepmind-mcp
+
+# Check for updates
+npm outdated @darbotlabs/darbot-deepmind-mcp
+
+# Test server start
+timeout 10s npm start || echo "Server started successfully"</code></pre>
+                    </div>
+
+                    <h2>Next Steps</h2>
+                    <div class="docs-grid" style="margin-top: 2rem;">
+                        <a href="configuration.html" class="doc-card">
+                            <h3>⚙️ Configuration</h3>
+                            <p>Review configuration options</p>
+                        </a>
+                        <a href="api-reference.html" class="doc-card">
+                            <h3>📖 API Reference</h3>
+                            <p>Check parameter requirements</p>
+                        </a>
+                        <a href="https://github.com/darbotlabs/darbot-deepmind-mcp/issues" class="doc-card" target="_blank">
+                            <h3>💬 Get Help</h3>
+                            <p>Ask the community</p>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>About</h3>
+                    <p>Built with the <a href="https://modelcontextprotocol.io/" target="_blank">Model Context Protocol</a></p>
+                    <p>Made with ❤️ by <a href="https://github.com/darbotlabs" target="_blank">Darbot Labs</a></p>
+                </div>
+                <div class="footer-section">
+                    <h3>Resources</h3>
+                    <ul>
+                        <li><a href="https://github.com/darbotlabs/darbot-deepmind-mcp" target="_blank">GitHub Repository</a></li>
+                        <li><a href="https://www.npmjs.com/package/@darbotlabs/darbot-deepmind-mcp" target="_blank">npm Package</a></li>
+                        <li><a href="https://github.com/darbotlabs/darbot-deepmind-mcp/blob/main/CHANGELOG.md" target="_blank">Changelog</a></li>
+                        <li><a href="https://github.com/darbotlabs/darbot-deepmind-mcp/blob/main/LICENSE" target="_blank">License (MIT)</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h3>Technologies</h3>
+                    <ul>
+                        <li><a href="https://www.typescriptlang.org/" target="_blank">TypeScript</a></li>
+                        <li><a href="https://nodejs.org/" target="_blank">Node.js</a></li>
+                        <li><a href="https://github.com/chalk/chalk" target="_blank">Chalk</a></li>
+                        <li><a href="https://github.com/colinhacks/zod" target="_blank">Zod</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 Darbot Labs. Licensed under the MIT License.</p>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>

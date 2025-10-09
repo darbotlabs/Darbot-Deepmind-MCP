@@ -6,6 +6,8 @@ An MCP server implementation that provides advanced AI reasoning capabilities th
 [![Node.js CI](https://github.com/darbotlabs/darbot-deepmind-mcp/workflows/CI/badge.svg)](https://github.com/darbotlabs/darbot-deepmind-mcp/actions)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
+📚 **[View Full Documentation](https://darbotlabs.github.io/Darbot-Deepmind-MCP/)**
+
 ## Features
 
 - **Advanced Deepmind Reasoning**: Break down complex problems into manageable thought steps

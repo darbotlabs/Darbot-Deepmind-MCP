@@ -44,6 +44,41 @@ describe('Microsoft Authentication Tool', () => {
       expect(isValidAuth(validAuth)).toBe(true);
     });
 
+    it('should require either direct params or alias', () => {
+      // Valid: all three direct params
+      const validDirect = {
+        clientId: 'client-123',
+        resourceId: 'resource-456',
+        tenantId: 'tenant-789',
+      };
+
+      // Valid: alias
+      const validAlias = {
+        alias: 'production-app',
+      };
+
+      // Invalid: no params at all
+      const invalidEmpty = {};
+
+      // Invalid: only partial direct params
+      const invalidPartial = {
+        clientId: 'client-123',
+        resourceId: 'resource-456',
+        // missing tenantId
+      };
+
+      const hasValidParams = (auth: any) => {
+        const hasAlias = !!(auth.alias && auth.alias.length > 0);
+        const hasAllDirect = !!(auth.clientId && auth.resourceId && auth.tenantId);
+        return hasAlias || hasAllDirect;
+      };
+
+      expect(hasValidParams(validDirect)).toBe(true);
+      expect(hasValidParams(validAlias)).toBe(true);
+      expect(hasValidParams(invalidEmpty)).toBe(false);
+      expect(hasValidParams(invalidPartial)).toBe(false);
+    });
+
     it('should reject invalid authentication parameters', () => {
       const invalidAuths = [
         { clientId: '', resourceId: 'valid', tenantId: 'valid' }, // empty clientId
@@ -106,18 +141,18 @@ describe('Microsoft Authentication Tool', () => {
 
   describe('Timeout Configuration', () => {
     it('should accept valid timeout values', () => {
-      const validTimeouts = [1, 5, 10, 15, 30, 0.5, 2.75];
+      const validTimeouts = [1, 5, 10, 15, 30, 2.75];
 
       validTimeouts.forEach((timeout) => {
-        expect(timeout).toBeGreaterThan(0);
+        expect(timeout).toBeGreaterThanOrEqual(1);
       });
     });
 
     it('should reject invalid timeout values', () => {
-      const invalidTimeouts = [0, -1, -10];
+      const invalidTimeouts = [0, -1, -10, 0.5];
 
       invalidTimeouts.forEach((timeout) => {
-        expect(timeout).toBeLessThanOrEqual(0);
+        expect(timeout).toBeLessThan(1);
       });
     });
   });

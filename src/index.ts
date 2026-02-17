@@ -47,15 +47,23 @@ type DeepmindInput = z.infer<typeof DeepmindSchema>;
  * Zod schema for validating microsoft_auth tool inputs
  */
 const MicrosoftAuthSchema = z.object({
-  clientId: z.string().min(1).describe('Azure AD application (client) ID'),
-  resourceId: z.string().min(1).describe('Resource ID to authenticate to'),
-  tenantId: z.string().min(1).describe('Azure AD tenant ID'),
+  clientId: z
+    .string()
+    .min(1)
+    .describe('Azure AD application (client) ID')
+    .optional(),
+  resourceId: z.string().min(1).describe('Resource ID to authenticate to').optional(),
+  tenantId: z.string().min(1).describe('Azure AD tenant ID').optional(),
   output: z
     .enum(['token', 'json', 'status'])
     .optional()
     .default('json')
     .describe('Output format (token, json, or status)'),
-  timeout: z.number().positive().optional().describe('Timeout in minutes (default: 15)'),
+  timeout: z
+    .number()
+    .min(1)
+    .optional()
+    .describe('Timeout in minutes (default: 15, minimum: 1)'),
   mode: z
     .enum(['interactive', 'device-code', 'silent'])
     .optional()
@@ -318,6 +326,33 @@ class MicrosoftAuthServer {
     try {
       // Validate input with Zod schema
       const validatedInput = MicrosoftAuthSchema.parse(input);
+
+      // Additional validation: ensure either alias OR direct parameters are provided
+      const hasAlias = validatedInput.alias && validatedInput.alias.length > 0;
+      const hasDirectParams =
+        validatedInput.clientId &&
+        validatedInput.resourceId &&
+        validatedInput.tenantId;
+
+      if (!hasAlias && !hasDirectParams) {
+        return {
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(
+                {
+                  success: false,
+                  error:
+                    'Either provide all three direct parameters (clientId, resourceId, tenantId) OR provide an alias parameter',
+                },
+                null,
+                2
+              ),
+            },
+          ],
+          isError: true,
+        };
+      }
 
       // Check if azureauth is installed
       const isInstalled = await this.checkAzureAuthInstalled();
@@ -583,9 +618,9 @@ Output formats:
 - token: Returns only the access token as plain text
 - status: Returns authentication and cache status
 
-The tool requires either:
-1. Direct parameters: clientId, resourceId, tenantId
-2. Config file alias: alias (requires AZUREAUTH_CONFIG environment variable)
+IMPORTANT: You must provide either:
+1. All three direct parameters: clientId, resourceId, AND tenantId
+2. OR a single alias parameter (requires AZUREAUTH_CONFIG environment variable)
 
 Note: The azureauth CLI must be installed separately. Installation instructions:
 - Windows: https://github.com/AzureAD/microsoft-authentication-cli#windows
@@ -595,15 +630,16 @@ Note: The azureauth CLI must be installed separately. Installation instructions:
     properties: {
       clientId: {
         type: 'string',
-        description: 'Azure AD application (client) ID',
+        description:
+          'Azure AD application (client) ID. Required unless using alias.',
       },
       resourceId: {
         type: 'string',
-        description: 'Resource ID to authenticate to',
+        description: 'Resource ID to authenticate to. Required unless using alias.',
       },
       tenantId: {
         type: 'string',
-        description: 'Azure AD tenant ID',
+        description: 'Azure AD tenant ID. Required unless using alias.',
       },
       output: {
         type: 'string',
@@ -613,8 +649,8 @@ Note: The azureauth CLI must be installed separately. Installation instructions:
       },
       timeout: {
         type: 'number',
-        description: 'Timeout in minutes (default: 15)',
-        minimum: 0.1,
+        description: 'Timeout in minutes (default: 15, minimum: 1)',
+        minimum: 1,
       },
       mode: {
         type: 'string',
@@ -624,7 +660,8 @@ Note: The azureauth CLI must be installed separately. Installation instructions:
       },
       alias: {
         type: 'string',
-        description: 'Config alias name (if using config file)',
+        description:
+          'Config alias name (if using config file). If provided, clientId/resourceId/tenantId are not required.',
       },
     },
     required: [],

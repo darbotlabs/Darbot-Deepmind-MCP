@@ -246,8 +246,11 @@ describe('Darbot Deepmind MCP Server', () => {
       };
 
       // Simulate the adjustment logic
-      const adjustedTotalThoughts = Math.max(extendedThought.thoughtNumber, extendedThought.totalThoughts);
-      
+      const adjustedTotalThoughts = Math.max(
+        extendedThought.thoughtNumber,
+        extendedThought.totalThoughts
+      );
+
       expect(adjustedTotalThoughts).toBe(8);
       expect(extendedThought.needsMoreThoughts).toBe(true);
     });
@@ -256,18 +259,20 @@ describe('Darbot Deepmind MCP Server', () => {
   describe('Environment Configuration', () => {
     it('should respect DISABLE_THOUGHT_LOGGING environment variable', () => {
       process.env.DISABLE_THOUGHT_LOGGING = 'true';
-      
+
       // This would be tested with the actual class implementation
-      const shouldDisableLogging = (process.env.DISABLE_THOUGHT_LOGGING as string)?.toLowerCase() === 'true';
-      
+      const shouldDisableLogging =
+        (process.env.DISABLE_THOUGHT_LOGGING as string)?.toLowerCase() === 'true';
+
       expect(shouldDisableLogging).toBe(true);
     });
 
     it('should default to logging enabled', () => {
       delete process.env.DISABLE_THOUGHT_LOGGING;
-      
-      const shouldDisableLogging = (process.env.DISABLE_THOUGHT_LOGGING as string)?.toLowerCase() === 'true';
-      
+
+      const shouldDisableLogging =
+        (process.env.DISABLE_THOUGHT_LOGGING as string)?.toLowerCase() === 'true';
+
       expect(shouldDisableLogging).toBe(false);
     });
   });
@@ -302,10 +307,7 @@ describe('Darbot Deepmind MCP Server', () => {
       };
 
       const isValidErrorResponse = (response: any) => {
-        return (
-          typeof response.error === 'string' &&
-          response.status === 'failed'
-        );
+        return typeof response.error === 'string' && response.status === 'failed';
       };
 
       expect(isValidErrorResponse(mockErrorResponse)).toBe(true);
@@ -353,13 +355,13 @@ describe('Darbot Deepmind MCP Server', () => {
       });
 
       // Check revision logic
-      const revisionStep = reasoningSteps.find(step => step.isRevision);
+      const revisionStep = reasoningSteps.find((step) => step.isRevision);
       expect(revisionStep).toBeDefined();
       expect(revisionStep!.isRevision).toBe(true);
       expect(revisionStep!.revisesThought).toBeLessThan(revisionStep!.thoughtNumber);
 
       // Check branching logic
-      const branchStep = reasoningSteps.find(step => step.branchFromThought);
+      const branchStep = reasoningSteps.find((step) => step.branchFromThought);
       expect(branchStep).toBeDefined();
       expect(branchStep!.branchFromThought).toBeLessThan(branchStep!.thoughtNumber);
       expect(branchStep!.branchId).toBeDefined();

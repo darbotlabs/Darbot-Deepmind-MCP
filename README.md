@@ -16,6 +16,7 @@ An MCP server implementation that provides advanced AI reasoning capabilities th
 - **Adaptive Planning**: Dynamically adjust the number of thoughts needed as problem complexity becomes clearer
 - **Solution Hypothesis Generation**: Create and verify hypotheses throughout the reasoning process
 - **Context-aware Analysis**: Filter irrelevant information while maintaining focus on key aspects
+- **Microsoft Authentication**: Seamless Azure AD authentication using microsoft-authentication-cli
 - **Beautiful Console Output**: Formatted thought display with colors and borders for enhanced readability
 
 ## Installation
@@ -100,6 +101,49 @@ Facilitates sophisticated, step-by-step reasoning through Darbot's deepmind thin
 | `branchId` | string | No | Branch identifier for multi-path reasoning |
 | `needsMoreThoughts` | boolean | No | If more thoughts are needed beyond initial estimate |
 
+### microsoft_auth
+
+Authenticates with Azure Active Directory (AAD) and obtains access tokens using the microsoft-authentication-cli tool.
+
+#### Prerequisites
+
+- `azureauth` CLI must be installed on your system
+- Azure AD application must be properly configured with redirect URIs
+- Client ID, Resource ID, and Tenant ID must be available
+
+#### Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `clientId` | string | No* | Azure AD application (client) ID |
+| `resourceId` | string | No* | Resource ID to authenticate to |
+| `tenantId` | string | No* | Azure AD tenant ID |
+| `output` | enum | No | Output format: `token`, `json` (default), or `status` |
+| `timeout` | number | No | Timeout in minutes (default: 15) |
+| `mode` | enum | No | Authentication mode: `interactive` (default), `device-code`, or `silent` |
+| `alias` | string | No* | Config alias name (requires `AZUREAUTH_CONFIG` env var) |
+
+\* Either provide `clientId`, `resourceId`, and `tenantId` OR provide `alias`
+
+#### Installing azureauth CLI
+
+**Windows:**
+```powershell
+$env:AZUREAUTH_VERSION = '0.9.2'
+$script = "${env:TEMP}\install.ps1"
+$url = "https://raw.githubusercontent.com/AzureAD/microsoft-authentication-cli/${env:AZUREAUTH_VERSION}/install/install.ps1"
+[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+Invoke-WebRequest $url -OutFile $script; if ($?) { &$script }; if ($?) { rm $script }
+```
+
+**macOS:**
+```bash
+export AZUREAUTH_VERSION='0.9.2'
+curl -sL https://raw.githubusercontent.com/AzureAD/microsoft-authentication-cli/$AZUREAUTH_VERSION/install/install.sh | sh
+```
+
+For the latest version, check the [releases page](https://github.com/AzureAD/microsoft-authentication-cli/releases).
+
 ## Usage Examples
 
 ### Basic Problem Solving
@@ -146,6 +190,38 @@ Explore alternative solutions:
 }
 ```
 
+### Microsoft Authentication
+
+Authenticate with Azure AD to access protected resources:
+
+```javascript
+// Interactive authentication (opens browser)
+{
+  "clientId": "73e5793e-8f71-4da2-9f71-575cb3019b37",
+  "resourceId": "67eeda51-3891-4101-a0e3-bf0c64047157",
+  "tenantId": "a3be859b-7f9a-4955-98ed-f3602dbd954c",
+  "output": "json",
+  "mode": "interactive"
+}
+
+// Device code flow (for headless environments)
+{
+  "clientId": "73e5793e-8f71-4da2-9f71-575cb3019b37",
+  "resourceId": "67eeda51-3891-4101-a0e3-bf0c64047157",
+  "tenantId": "a3be859b-7f9a-4955-98ed-f3602dbd954c",
+  "output": "json",
+  "mode": "device-code",
+  "timeout": 20
+}
+
+// Using config alias (requires AZUREAUTH_CONFIG environment variable)
+{
+  "alias": "production-app",
+  "output": "token",
+  "mode": "silent"
+}
+```
+
 ## Configuration
 
 ### Environment Variables
@@ -155,6 +231,8 @@ Explore alternative solutions:
 | `DISABLE_THOUGHT_LOGGING` | `false` | Set to `true` to disable detailed thought logging |
 | `MCP_PORT` | `3000` | Port for MCP server (when running standalone) |
 | `LOG_LEVEL` | `info` | Logging level: `debug`, `info`, `warn`, `error` |
+| `AZUREAUTH_CONFIG` | - | Path to azureauth config file (for using aliases) |
+| `AZUREAUTH_APPLICATION_INSIGHTS_INGESTION_TOKEN` | - | Application Insights ingestion token (enables telemetry for azureauth) |
 
 ### VS Code Integration
 
@@ -307,6 +385,21 @@ npm start
 - Run with appropriate permissions: `sudo npm install -g`
 - Use `nvm` for Node.js version management to avoid permission issues
 
+#### 10. Microsoft Authentication Issues
+
+**Symptom**: Authentication fails or `azureauth` command not found.
+
+**Solutions**:
+- Verify `azureauth` is installed: Run `azureauth --version`
+- Install `azureauth` if missing: See [installation instructions](https://github.com/AzureAD/microsoft-authentication-cli#installation)
+- Check if `azureauth` is in PATH: Run `which azureauth` (macOS/Linux) or `where azureauth` (Windows)
+- For headless Linux, use device code flow: Set `mode: "device-code"`
+- Verify Azure AD app registration has correct redirect URIs configured
+- Check client ID, resource ID, and tenant ID are correct
+- For timeout issues, increase timeout value: `timeout: 30` (in minutes)
+- Clear token cache if getting stale tokens: Delete cache files in `~/.azureauth` (macOS/Linux) or `%LOCALAPPDATA%\AzureAuth` (Windows)
+- Enable debug logging for azureauth: Set environment variable `AZUREAUTH_LOG_LEVEL=debug`
+
 ### Debug Mode
 
 To enable detailed debugging:
@@ -350,6 +443,9 @@ The Darbot Deepmind MCP server is ideal for:
 - **Learning and Education**: Breaking down complex topics into understandable steps
 - **Project Planning**: Decomposing large projects into manageable tasks
 - **Debugging**: Systematic approach to identifying and solving issues
+- **Azure Integration**: Authenticating with Azure AD for accessing protected resources
+- **API Development**: Securing API calls with Azure AD tokens
+- **Cloud Automation**: Integrating Azure authentication in automated workflows
 
 ## Performance Considerations
 
@@ -398,6 +494,7 @@ This MCP server is licensed under the MIT License. This means you are free to us
 - Inspired by advanced AI reasoning techniques
 - Uses [Chalk](https://github.com/chalk/chalk) for beautiful console output
 - Validation powered by [Zod](https://github.com/colinhacks/zod)
+- Azure AD authentication via [microsoft-authentication-cli](https://github.com/AzureAD/microsoft-authentication-cli)
 
 ---
 

@@ -66,12 +66,38 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Microsoft Authentication Tool**: Full integration with microsoft-authentication-cli
+  - New `microsoft_auth` MCP tool for Azure AD authentication
+  - Support for multiple authentication modes: interactive, device-code, and silent
+  - Configurable output formats: token, json, and status
+  - Timeout configuration for long-running authentication flows
+  - Config alias support for simplified authentication
+  - Automatic detection and helpful error messages when azureauth CLI is not installed
+  - Comprehensive test suite with 23 test cases covering all scenarios
+- Documentation updates:
+  - Microsoft Auth tool reference with complete parameter descriptions
+  - Installation instructions for azureauth CLI (Windows and macOS)
+  - Usage examples for different authentication scenarios
+  - Troubleshooting section for common authentication issues
+  - Environment variable documentation for Azure-related configuration
+  - Updated use cases to include Azure integration scenarios
 - GitHub Pages documentation site with comprehensive guides
 - Configuration guide with environment variables and integration examples
 - Framework documentation covering technical architecture and design patterns
 - Complete API reference with detailed parameter descriptions
 - Troubleshooting guide with solutions to common issues
 - Professional landing page with feature highlights and quick start guides
+
+### Changed
+- Enhanced server initialization to support multiple MCP tools
+- Updated acknowledgments to credit microsoft-authentication-cli
+
+### Technical Details
+- Added `child_process` exec and promisify imports for CLI execution
+- Implemented `MicrosoftAuthServer` class with authentication logic
+- Added comprehensive error handling for CLI execution failures
+- Zod schema validation for Microsoft Auth inputs
+- Proper timeout handling and process management
 
 ### Planned
 - Additional reasoning patterns

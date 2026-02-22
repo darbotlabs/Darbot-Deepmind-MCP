@@ -38,7 +38,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Revision Support**: Ability to revise and refine previous thoughts
 
 ### Technical Specifications
-- **Node.js**: Requires 18.0.0 or higher
+- **Node.js**: Requires 20.19.0 or higher
 - **TypeScript**: Built with TypeScript 5.9.3
 - **MCP SDK**: Compatible with Model Context Protocol SDK 1.26.0
 - **GitHub Copilot SDK**: `@github/copilot-sdk` 0.1.25
@@ -59,7 +59,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Code examples and usage patterns
 
 ### Infrastructure
-- GitHub Actions CI pipeline testing on Node.js 18, 20, and 22
+- GitHub Actions CI pipeline testing on Node.js 20 and 22
 - Docker build and test automation
 - Automated npm publishing workflow (dry-run)
 - Codecov integration for coverage reporting

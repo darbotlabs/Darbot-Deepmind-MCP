@@ -8,13 +8,15 @@ Darbot Deepmind MCP Server is a Model Context Protocol (MCP) server that provide
 
 ## Technology Stack
 
-- **Language**: TypeScript 5.7.2+ with strict type checking
-- **Runtime**: Node.js 18.0.0 or higher
+- **Language**: TypeScript 5.9.3+ with strict type checking
+- **Runtime**: Node.js 20.19.0 or higher
 - **Key Dependencies**:
-  - `@modelcontextprotocol/sdk` - MCP protocol implementation
-  - `zod` - Schema validation
+  - `@modelcontextprotocol/sdk` ^1.26.0 - MCP protocol implementation
+  - `@github/copilot-sdk` ^0.1.25 - GitHub Copilot integration (planned)
+  - `zod` ^4.3.6 - Schema validation
   - `chalk` - Console output formatting
-- **Testing**: Jest with 80%+ coverage requirement
+- **Testing**: Jest 30 test framework
+- **Linting**: ESLint 10 with flat config (eslint.config.mjs)
 - **Code Quality**: ESLint and Prettier
 
 ## Coding Standards

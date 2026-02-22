@@ -24,7 +24,7 @@ An MCP server implementation that provides advanced AI reasoning capabilities th
 
 ### Prerequisites
 
-- Node.js 18+ or Docker
+- Node.js 20.19+ or Docker
 - npm or yarn package manager (for local installation)
 
 ### Quick Installation
@@ -294,7 +294,7 @@ npm start
 **Symptom**: The server fails to start or immediately exits.
 
 **Solutions**:
-- Ensure Node.js 18+ is installed: `node --version`
+- Ensure Node.js 20.19+ is installed: `node --version`
 - Check if port 3000 is available: `netstat -an | findstr 3000` (Windows) or `lsof -i :3000` (macOS/Linux)
 - Verify all dependencies are installed: `npm install`
 - Check for TypeScript compilation errors: `npm run build`

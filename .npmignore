@@ -6,7 +6,7 @@ src/
 # Configuration files
 tsconfig.json
 jest.config.js
-.eslintrc.json
+eslint.config.mjs
 .prettierrc
 
 # Test files

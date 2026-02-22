@@ -17,6 +17,7 @@ An MCP server implementation that provides advanced AI reasoning capabilities th
 - **Solution Hypothesis Generation**: Create and verify hypotheses throughout the reasoning process
 - **Context-aware Analysis**: Filter irrelevant information while maintaining focus on key aspects
 - **Microsoft Authentication**: Seamless Azure AD authentication using microsoft-authentication-cli
+- **GitHub Copilot SDK**: Integration with GitHub Copilot extensions via `@github/copilot-sdk`
 - **Beautiful Console Output**: Formatted thought display with colors and borders for enhanced readability
 
 ## Installation
@@ -490,10 +491,11 @@ This MCP server is licensed under the MIT License. This means you are free to us
 
 ## Acknowledgments
 
-- Built with the [Model Context Protocol](https://modelcontextprotocol.io/)
+- Built with the [Model Context Protocol](https://modelcontextprotocol.io/) SDK 1.26.0
+- GitHub Copilot integration via [@github/copilot-sdk](https://www.npmjs.com/package/@github/copilot-sdk)
 - Inspired by advanced AI reasoning techniques
 - Uses [Chalk](https://github.com/chalk/chalk) for beautiful console output
-- Validation powered by [Zod](https://github.com/colinhacks/zod)
+- Validation powered by [Zod](https://github.com/colinhacks/zod) 4.x
 - Azure AD authentication via [microsoft-authentication-cli](https://github.com/AzureAD/microsoft-authentication-cli)
 
 ---

@@ -39,8 +39,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Technical Specifications
 - **Node.js**: Requires 18.0.0 or higher
-- **TypeScript**: Built with TypeScript 5.7.2
-- **MCP SDK**: Compatible with Model Context Protocol SDK 0.5.0
+- **TypeScript**: Built with TypeScript 5.9.3
+- **MCP SDK**: Compatible with Model Context Protocol SDK 1.26.0
+- **GitHub Copilot SDK**: `@github/copilot-sdk` 0.1.25
 - **Testing**: Jest test framework with 80%+ coverage requirement
 - **Code Quality**: ESLint and Prettier for consistent code style
 - **Package Management**: npm with lockfile for reproducible builds
@@ -64,6 +65,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Codecov integration for coverage reporting
 
 ## [Unreleased]
+
+### Changed
+- **Dependency Upgrades**: Upgraded all dependencies to latest versions
+  - `@modelcontextprotocol/sdk` 0.5.0 → 1.26.0 (fixes ReDoS and DNS rebinding vulnerabilities)
+  - `zod` 3.23.8 → 4.3.6
+  - `chalk` 5.3.0 → 5.6.2
+  - `jest` 29.7.0 → 30.2.0
+  - `eslint` 9.17.0 → 10.0.1
+  - `typescript` 5.7.2 → 5.9.3
+  - `@types/jest` 29.5.14 → 30.0.0
+  - `@types/node` 22.10.2 → 25.3.0
+  - `@typescript-eslint/eslint-plugin` 8.19.0 → 8.56.0
+  - `@typescript-eslint/parser` 8.19.0 → 8.56.0
+  - `prettier` 3.4.2 → 3.8.1
+  - `rimraf` 6.0.1 → 6.1.3
+  - `ts-jest` 29.2.5 → 29.4.6
+  - `tsx` 4.19.2 → 4.21.0
+- Added `@github/copilot-sdk` ^0.1.25 as new dependency for GitHub Copilot extension integration
+
+### Security
+- Resolved 5 Dependabot vulnerabilities (3 high, 2 moderate)
+  - Fixed ReDoS vulnerability in `@modelcontextprotocol/sdk` (CVE alert #10)
+  - Fixed DNS rebinding protection bypass in `@modelcontextprotocol/sdk` (CVE alert #6)
+  - Fixed command injection in `glob` CLI (CVE alert #4)
+  - Fixed prototype pollution in `js-yaml` (CVE alerts #2, #5)
 
 ### Added
 - **Microsoft Authentication Tool**: Full integration with microsoft-authentication-cli

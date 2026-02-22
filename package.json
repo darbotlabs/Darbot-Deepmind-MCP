@@ -1,6 +1,6 @@
 {
   "name": "@darbotlabs/darbot-deepmind-mcp",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Advanced AI reasoning capabilities through Darbot's deepmind thinking framework for MCP",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

@@ -1,0 +1,112 @@
+{
+  "folders": [
+    {
+      "name": "Darbot Deepmind MCP",
+      "path": "."
+    }
+  ],
+  "settings": {
+    "typescript.preferences.includePackageJsonAutoImports": "auto",
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+      "source.fixAll.eslint": "explicit"
+    },
+    "npm.enableScriptExplorer": true,
+    "files.exclude": {
+      "**/node_modules": true,
+      "**/dist": true,
+      "**/coverage": true
+    },
+    "search.exclude": {
+      "**/node_modules": true,
+      "**/dist": true,
+      "**/coverage": true
+    }
+  },
+  "extensions": {
+    "recommendations": [
+      "ms-vscode.vscode-typescript-next",
+      "esbenp.prettier-vscode",
+      "dbaeumer.vscode-eslint",
+      "ms-vscode.test-adapter-converter",
+      "orta.vscode-jest",
+      "ms-vscode.vscode-json"
+    ]
+  },
+  "tasks": {
+    "version": "2.0.0",
+    "tasks": [
+      {
+        "label": "build",
+        "type": "npm",
+        "script": "build",
+        "group": "build",
+        "problemMatcher": ["$tsc"]
+      },
+      {
+        "label": "test",
+        "type": "npm",
+        "script": "test",
+        "group": "test",
+        "problemMatcher": []
+      },
+      {
+        "label": "lint",
+        "type": "npm",
+        "script": "lint",
+        "group": "build",
+        "problemMatcher": ["$eslint-stylish"]
+      },
+      {
+        "label": "dev",
+        "type": "npm",
+        "script": "dev",
+        "group": "build",
+        "isBackground": true,
+        "problemMatcher": ["$tsc-watch"]
+      },
+      {
+        "label": "publish-dry-run",
+        "type": "npm",
+        "script": "release:dry",
+        "group": "build",
+        "problemMatcher": []
+      },
+      {
+        "label": "publish",
+        "type": "npm",
+        "script": "release",
+        "group": "build",
+        "problemMatcher": []
+      }
+    ]
+  },
+  "launch": {
+    "version": "0.2.0",
+    "configurations": [
+      {
+        "name": "Debug MCP Server",
+        "type": "node",
+        "request": "launch",
+        "program": "${workspaceFolder}/dist/index.js",
+        "outFiles": ["${workspaceFolder}/dist/**/*.js"],
+        "env": {
+          "LOG_LEVEL": "debug"
+        },
+        "console": "integratedTerminal",
+        "preLaunchTask": "build"
+      },
+      {
+        "name": "Run Tests",
+        "type": "node",
+        "request": "launch",
+        "program": "${workspaceFolder}/node_modules/.bin/jest",
+        "args": ["--runInBand"],
+        "console": "integratedTerminal",
+        "internalConsoleOptions": "neverOpen",
+        "disableOptimisticBPs": true
+      }
+    ]
+  }
+}

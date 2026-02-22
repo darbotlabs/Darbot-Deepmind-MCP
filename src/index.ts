@@ -1,33 +1,86 @@
 #!/usr/bin/env node
 
-import { Server } from "@modelcontextprotocol/sdk/server/index.js";
-import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
+import { Server } from '@modelcontextprotocol/sdk/server/index.js';
+import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import {
   CallToolRequestSchema,
   ListToolsRequestSchema,
   Tool,
   ErrorCode,
   McpError,
-} from "@modelcontextprotocol/sdk/types.js";
-import { z } from "zod";
+} from '@modelcontextprotocol/sdk/types.js';
+import { z } from 'zod';
 import chalk from 'chalk';
+import { exec } from 'child_process';
+import { promisify } from 'util';
+
+const execAsync = promisify(exec);
 
 /**
  * Zod schema for validating darbot_deepmind tool inputs
  */
 const DeepmindSchema = z.object({
-  thought: z.string().min(1).describe("The current thinking step"),
-  nextThoughtNeeded: z.boolean().describe("Whether another thought step is needed"),
-  thoughtNumber: z.number().int().positive().describe("Current thought number"),
-  totalThoughts: z.number().int().positive().describe("Estimated total thoughts needed"),
-  isRevision: z.boolean().optional().describe("Whether this revises previous thinking"),
-  revisesThought: z.number().int().positive().optional().describe("Which thought is being reconsidered"),
-  branchFromThought: z.number().int().positive().optional().describe("Branching point thought number"),
-  branchId: z.string().optional().describe("Branch identifier"),
-  needsMoreThoughts: z.boolean().optional().describe("If more thoughts are needed"),
+  thought: z.string().min(1).describe('The current thinking step'),
+  nextThoughtNeeded: z.boolean().describe('Whether another thought step is needed'),
+  thoughtNumber: z.number().int().positive().describe('Current thought number'),
+  totalThoughts: z.number().int().positive().describe('Estimated total thoughts needed'),
+  isRevision: z.boolean().optional().describe('Whether this revises previous thinking'),
+  revisesThought: z
+    .number()
+    .int()
+    .positive()
+    .optional()
+    .describe('Which thought is being reconsidered'),
+  branchFromThought: z
+    .number()
+    .int()
+    .positive()
+    .optional()
+    .describe('Branching point thought number'),
+  branchId: z.string().optional().describe('Branch identifier'),
+  needsMoreThoughts: z.boolean().optional().describe('If more thoughts are needed'),
 });
 
 type DeepmindInput = z.infer<typeof DeepmindSchema>;
+
+/**
+ * Zod schema for validating microsoft_auth tool inputs
+ */
+const MicrosoftAuthSchema = z.object({
+  clientId: z
+    .string()
+    .min(1)
+    .describe('Azure AD application (client) ID')
+    .optional(),
+  resourceId: z.string().min(1).describe('Resource ID to authenticate to').optional(),
+  tenantId: z.string().min(1).describe('Azure AD tenant ID').optional(),
+  output: z
+    .enum(['token', 'json', 'status'])
+    .optional()
+    .default('json')
+    .describe('Output format (token, json, or status)'),
+  timeout: z
+    .number()
+    .min(1)
+    .optional()
+    .describe('Timeout in minutes (default: 15, minimum: 1)'),
+  mode: z
+    .enum(['interactive', 'device-code', 'silent'])
+    .optional()
+    .default('interactive')
+    .describe('Authentication mode'),
+  alias: z.string().optional().describe('Config alias name (if using config file)'),
+});
+
+interface MicrosoftAuthResponse {
+  success: boolean;
+  output?: string;
+  error?: string;
+  user?: string;
+  displayName?: string;
+  token?: string;
+  expirationDate?: string;
+}
 
 interface ThoughtResponse {
   thoughtNumber: number;
@@ -51,14 +104,22 @@ class DarbotDeepmindServer {
   private disableThoughtLogging: boolean;
 
   constructor() {
-    this.disableThoughtLogging = process.env.DISABLE_THOUGHT_LOGGING?.toLowerCase() === "true";
+    this.disableThoughtLogging = process.env.DISABLE_THOUGHT_LOGGING?.toLowerCase() === 'true';
   }
 
   /**
    * Formats a thought for beautiful console output
    */
   private formatThought(thoughtData: DeepmindInput): string {
-    const { thoughtNumber, totalThoughts, thought, isRevision, revisesThought, branchFromThought, branchId } = thoughtData;
+    const {
+      thoughtNumber,
+      totalThoughts,
+      thought,
+      isRevision,
+      revisesThought,
+      branchFromThought,
+      branchId,
+    } = thoughtData;
 
     let prefix = '';
     let context = '';
@@ -92,10 +153,12 @@ class DarbotDeepmindServer {
   private validateRevision(input: DeepmindInput): void {
     if (input.isRevision && input.revisesThought !== undefined) {
       if (input.revisesThought >= input.thoughtNumber) {
-        throw new Error("Cannot revise a future thought. revisesThought must be less than current thoughtNumber.");
+        throw new Error(
+          'Cannot revise a future thought. revisesThought must be less than current thoughtNumber.'
+        );
       }
       if (input.revisesThought < 1) {
-        throw new Error("revisesThought must be a positive number.");
+        throw new Error('revisesThought must be a positive number.');
       }
     }
   }
@@ -106,10 +169,12 @@ class DarbotDeepmindServer {
   private validateBranching(input: DeepmindInput): void {
     if (input.branchFromThought !== undefined) {
       if (input.branchFromThought >= input.thoughtNumber) {
-        throw new Error("Cannot branch from a future thought. branchFromThought must be less than current thoughtNumber.");
+        throw new Error(
+          'Cannot branch from a future thought. branchFromThought must be less than current thoughtNumber.'
+        );
       }
       if (!input.branchId) {
-        throw new Error("branchId is required when branchFromThought is specified.");
+        throw new Error('branchId is required when branchFromThought is specified.');
       }
     }
   }
@@ -126,7 +191,10 @@ class DarbotDeepmindServer {
   /**
    * Processes a thought input and returns formatted response
    */
-  public processThought(input: unknown): { content: Array<{ type: string; text: string }>; isError?: boolean } {
+  public processThought(input: unknown): {
+    content: Array<{ type: string; text: string }>;
+    isError?: boolean;
+  } {
     try {
       // Validate input with Zod schema
       const validatedInput = DeepmindSchema.parse(input);
@@ -176,28 +244,36 @@ class DarbotDeepmindServer {
       }
 
       return {
-        content: [{
-          type: "text",
-          text: JSON.stringify(response, null, 2)
-        }]
+        content: [
+          {
+            type: 'text',
+            text: JSON.stringify(response, null, 2),
+          },
+        ],
       };
-
     } catch (error) {
-      const errorMessage = error instanceof z.ZodError 
-        ? `Validation error: ${error.errors.map(e => `${e.path.join('.')}: ${e.message}`).join(', ')}`
-        : error instanceof Error 
-        ? error.message 
-        : String(error);
+      const errorMessage =
+        error instanceof z.ZodError
+          ? `Validation error: ${error.errors.map((e) => `${e.path.join('.')}: ${e.message}`).join(', ')}`
+          : error instanceof Error
+            ? error.message
+            : String(error);
 
       return {
-        content: [{
-          type: "text",
-          text: JSON.stringify({
-            error: errorMessage,
-            status: 'failed'
-          }, null, 2)
-        }],
-        isError: true
+        content: [
+          {
+            type: 'text',
+            text: JSON.stringify(
+              {
+                error: errorMessage,
+                status: 'failed',
+              },
+              null,
+              2
+            ),
+          },
+        ],
+        isError: true,
       };
     }
   }
@@ -226,10 +302,191 @@ class DarbotDeepmindServer {
 }
 
 /**
+ * Microsoft Authentication Server class for Azure AD authentication
+ */
+class MicrosoftAuthServer {
+  /**
+   * Checks if azureauth CLI is installed
+   */
+  private async checkAzureAuthInstalled(): Promise<boolean> {
+    try {
+      await execAsync('azureauth --version');
+      return true;
+    } catch (error) {
+      return false;
+    }
+  }
+
+  /**
+   * Authenticates with Azure AD and returns access token
+   */
+  public async authenticate(
+    input: unknown
+  ): Promise<{ content: Array<{ type: string; text: string }>; isError?: boolean }> {
+    try {
+      // Validate input with Zod schema
+      const validatedInput = MicrosoftAuthSchema.parse(input);
+
+      // Additional validation: ensure either alias OR direct parameters are provided
+      const hasAlias = validatedInput.alias && validatedInput.alias.length > 0;
+      const hasDirectParams =
+        validatedInput.clientId &&
+        validatedInput.resourceId &&
+        validatedInput.tenantId;
+
+      if (!hasAlias && !hasDirectParams) {
+        return {
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(
+                {
+                  success: false,
+                  error:
+                    'Either provide all three direct parameters (clientId, resourceId, tenantId) OR provide an alias parameter',
+                },
+                null,
+                2
+              ),
+            },
+          ],
+          isError: true,
+        };
+      }
+
+      // Check if azureauth is installed
+      const isInstalled = await this.checkAzureAuthInstalled();
+      if (!isInstalled) {
+        return {
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(
+                {
+                  success: false,
+                  error:
+                    'azureauth CLI is not installed. Please install it from https://github.com/AzureAD/microsoft-authentication-cli',
+                  installInstructions: {
+                    windows:
+                      'Run PowerShell script from: https://github.com/AzureAD/microsoft-authentication-cli#windows',
+                    macOS:
+                      'Run shell script from: https://github.com/AzureAD/microsoft-authentication-cli#macos',
+                  },
+                },
+                null,
+                2
+              ),
+            },
+          ],
+          isError: true,
+        };
+      }
+
+      // Build azureauth command
+      let command = 'azureauth aad';
+
+      if (validatedInput.alias) {
+        command += ` --alias ${validatedInput.alias}`;
+      } else {
+        command += ` --client ${validatedInput.clientId}`;
+        command += ` --resource ${validatedInput.resourceId}`;
+        command += ` --tenant ${validatedInput.tenantId}`;
+      }
+
+      command += ` --output ${validatedInput.output}`;
+
+      if (validatedInput.timeout) {
+        command += ` --timeout ${validatedInput.timeout}`;
+      }
+
+      // Add mode-specific flags
+      if (validatedInput.mode === 'device-code') {
+        command += ' --mode devicecode';
+      } else if (validatedInput.mode === 'silent') {
+        command += ' --mode silent';
+      }
+
+      console.error(chalk.blue('🔐 Microsoft Auth: Executing authentication...'));
+      console.error(chalk.gray(`Command: ${command}`));
+
+      // Execute the azureauth command
+      const { stdout, stderr } = await execAsync(command, {
+        timeout: (validatedInput.timeout || 15) * 60 * 1000, // Convert minutes to milliseconds
+      });
+
+      if (stderr) {
+        console.error(chalk.yellow('⚠️  Microsoft Auth: Warning - '), stderr);
+      }
+
+      // Parse response based on output format
+      const response: MicrosoftAuthResponse = {
+        success: true,
+        output: stdout.trim(),
+      };
+
+      if (validatedInput.output === 'json') {
+        try {
+          const parsed = JSON.parse(stdout);
+          response.user = parsed.user;
+          response.displayName = parsed.display_name;
+          response.token = parsed.token;
+          response.expirationDate = parsed.expiration_date;
+        } catch (parseError) {
+          console.error(chalk.yellow('⚠️  Microsoft Auth: Could not parse JSON output'));
+        }
+      }
+
+      console.error(chalk.green('✅ Microsoft Auth: Authentication successful'));
+
+      return {
+        content: [
+          {
+            type: 'text',
+            text: JSON.stringify(response, null, 2),
+          },
+        ],
+      };
+    } catch (error) {
+      let errorMessage = 'Unknown error occurred';
+
+      if (error instanceof z.ZodError) {
+        errorMessage = `Validation error: ${error.errors.map((e) => `${e.path.join('.')}: ${e.message}`).join(', ')}`;
+      } else if (error instanceof Error) {
+        errorMessage = error.message;
+        // Check for timeout
+        if (errorMessage.includes('timeout')) {
+          errorMessage =
+            'Authentication timed out. You may need to increase the timeout value or try device code flow.';
+        }
+      }
+
+      console.error(chalk.red('❌ Microsoft Auth: Authentication failed - '), errorMessage);
+
+      return {
+        content: [
+          {
+            type: 'text',
+            text: JSON.stringify(
+              {
+                success: false,
+                error: errorMessage,
+              },
+              null,
+              2
+            ),
+          },
+        ],
+        isError: true,
+      };
+    }
+  }
+}
+
+/**
  * MCP Tool definition for darbot_deepmind
  */
 const DARBOT_DEEPMIND_TOOL: Tool = {
-  name: "darbot_deepmind",
+  name: 'darbot_deepmind',
   description: `Darbot Deepmind: A sophisticated tool for dynamic and reflective problem-solving through structured thinking.
 This tool helps analyze complex problems through an adaptive thinking process that evolves with understanding.
 Each thought can build on, question, or revise previous insights as understanding deepens.
@@ -285,51 +542,130 @@ You should:
 10. Provide a single, ideally correct answer as the final output
 11. Only set next_thought_needed to false when truly done and a satisfactory answer is reached`,
   inputSchema: {
-    type: "object",
+    type: 'object',
     properties: {
       thought: {
-        type: "string",
-        description: "Your current thinking step"
+        type: 'string',
+        description: 'Your current thinking step',
       },
       nextThoughtNeeded: {
-        type: "boolean",
-        description: "Whether another thought step is needed"
+        type: 'boolean',
+        description: 'Whether another thought step is needed',
       },
       thoughtNumber: {
-        type: "integer",
-        description: "Current thought number",
-        minimum: 1
+        type: 'integer',
+        description: 'Current thought number',
+        minimum: 1,
       },
       totalThoughts: {
-        type: "integer",
-        description: "Estimated total thoughts needed",
-        minimum: 1
+        type: 'integer',
+        description: 'Estimated total thoughts needed',
+        minimum: 1,
       },
       isRevision: {
-        type: "boolean",
-        description: "Whether this revises previous thinking"
+        type: 'boolean',
+        description: 'Whether this revises previous thinking',
       },
       revisesThought: {
-        type: "integer",
-        description: "Which thought is being reconsidered",
-        minimum: 1
+        type: 'integer',
+        description: 'Which thought is being reconsidered',
+        minimum: 1,
       },
       branchFromThought: {
-        type: "integer",
-        description: "Branching point thought number",
-        minimum: 1
+        type: 'integer',
+        description: 'Branching point thought number',
+        minimum: 1,
       },
       branchId: {
-        type: "string",
-        description: "Branch identifier"
+        type: 'string',
+        description: 'Branch identifier',
       },
       needsMoreThoughts: {
-        type: "boolean",
-        description: "If more thoughts are needed"
-      }
+        type: 'boolean',
+        description: 'If more thoughts are needed',
+      },
     },
-    required: ["thought", "nextThoughtNeeded", "thoughtNumber", "totalThoughts"]
-  }
+    required: ['thought', 'nextThoughtNeeded', 'thoughtNumber', 'totalThoughts'],
+  },
+};
+
+/**
+ * MCP Tool definition for microsoft_auth
+ */
+const MICROSOFT_AUTH_TOOL: Tool = {
+  name: 'microsoft_auth',
+  description: `Microsoft Authentication: Authenticate with Azure Active Directory (AAD) using the microsoft-authentication-cli tool.
+This tool provides a wrapper around the azureauth CLI to obtain access tokens for Azure AD applications.
+
+Prerequisites:
+- azureauth CLI must be installed on the system
+- Azure AD application must be properly configured with redirect URIs
+- Client ID, Resource ID, and Tenant ID must be available
+
+When to use this tool:
+- Authenticating to Azure resources programmatically
+- Obtaining access tokens for Azure AD protected APIs
+- Integrating Azure authentication in MCP workflows
+- Testing Azure AD authentication flows
+
+Supported authentication modes:
+- interactive: Opens browser for interactive login (default, recommended)
+- device-code: Uses device code flow for headless environments
+- silent: Attempts to use cached credentials without user interaction
+
+Output formats:
+- json: Returns detailed information including user, token, and expiration (default)
+- token: Returns only the access token as plain text
+- status: Returns authentication and cache status
+
+IMPORTANT: You must provide either:
+1. All three direct parameters: clientId, resourceId, AND tenantId
+2. OR a single alias parameter (requires AZUREAUTH_CONFIG environment variable)
+
+Note: The azureauth CLI must be installed separately. Installation instructions:
+- Windows: https://github.com/AzureAD/microsoft-authentication-cli#windows
+- macOS: https://github.com/AzureAD/microsoft-authentication-cli#macos`,
+  inputSchema: {
+    type: 'object',
+    properties: {
+      clientId: {
+        type: 'string',
+        description:
+          'Azure AD application (client) ID. Required unless using alias.',
+      },
+      resourceId: {
+        type: 'string',
+        description: 'Resource ID to authenticate to. Required unless using alias.',
+      },
+      tenantId: {
+        type: 'string',
+        description: 'Azure AD tenant ID. Required unless using alias.',
+      },
+      output: {
+        type: 'string',
+        enum: ['token', 'json', 'status'],
+        description: 'Output format (default: json)',
+        default: 'json',
+      },
+      timeout: {
+        type: 'number',
+        description: 'Timeout in minutes (default: 15, minimum: 1)',
+        minimum: 1,
+      },
+      mode: {
+        type: 'string',
+        enum: ['interactive', 'device-code', 'silent'],
+        description: 'Authentication mode (default: interactive)',
+        default: 'interactive',
+      },
+      alias: {
+        type: 'string',
+        description:
+          'Config alias name (if using config file). If provided, clientId/resourceId/tenantId are not required.',
+      },
+    },
+    required: [],
+  },
 };
 
 /**
@@ -339,8 +675,8 @@ async function main() {
   try {
     const server = new Server(
       {
-        name: "darbot-deepmind-server",
-        version: "1.0.0",
+        name: 'darbot-deepmind-server',
+        version: '1.0.0',
       },
       {
         capabilities: {
@@ -350,37 +686,39 @@ async function main() {
     );
 
     const thinkingServer = new DarbotDeepmindServer();
+    const authServer = new MicrosoftAuthServer();
 
     // Handle list tools request
     server.setRequestHandler(ListToolsRequestSchema, async () => ({
-      tools: [DARBOT_DEEPMIND_TOOL],
+      tools: [DARBOT_DEEPMIND_TOOL, MICROSOFT_AUTH_TOOL],
     }));
 
     // Handle call tool request
     server.setRequestHandler(CallToolRequestSchema, async (request) => {
-      if (request.params.name === "darbot_deepmind") {
+      if (request.params.name === 'darbot_deepmind') {
         return thinkingServer.processThought(request.params.arguments);
       }
 
-      throw new McpError(
-        ErrorCode.MethodNotFound,
-        `Unknown tool: ${request.params.name}`
-      );
+      if (request.params.name === 'microsoft_auth') {
+        return authServer.authenticate(request.params.arguments);
+      }
+
+      throw new McpError(ErrorCode.MethodNotFound, `Unknown tool: ${request.params.name}`);
     });
 
     // Connect to transport
     const transport = new StdioServerTransport();
     await server.connect(transport);
-    
-    console.error("Darbot Deepmind MCP Server running on stdio");
+
+    console.error('Darbot Deepmind MCP Server running on stdio');
   } catch (error) {
-    console.error("Fatal error running server:", error);
+    console.error('Fatal error running server:', error);
     process.exit(1);
   }
 }
 
 // Start the server
 main().catch((error) => {
-  console.error("Unhandled error:", error);
+  console.error('Unhandled error:', error);
   process.exit(1);
 });

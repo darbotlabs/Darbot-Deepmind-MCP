@@ -82,7 +82,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `rimraf` 6.0.1 → 6.1.3
   - `ts-jest` 29.2.5 → 29.4.6
   - `tsx` 4.19.2 → 4.21.0
-- Added `@github/copilot-sdk` ^0.1.25 as new dependency for GitHub Copilot extension integration
+- Added `@github/copilot-sdk` ^0.1.25 as new dependency for GitHub Copilot integration
+- Migrated ESLint configuration from `.eslintrc.json` (legacy) to `eslint.config.mjs` (flat config) for ESLint 10
+- Updated lint scripts to remove deprecated `--ext` flag
+- Added `@eslint/js`, `globals`, and `typescript-eslint` as dev dependencies for flat config
+- Migrated Zod error handling from `.errors` to `.issues` for Zod 4.x compatibility
+- Removed unnecessary async from ListTools handler
+- Applied strict lint fixes (bare catch clauses, typed JSON.parse, explicit return types)
 
 ### Security
 - Resolved 5 Dependabot vulnerabilities (3 high, 2 moderate)
@@ -126,10 +132,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Proper timeout handling and process management
 
 ### Planned
+- **GitHub Copilot SDK Integration**: Dual integration with `@github/copilot-sdk`
+  - Outbound: Darbot Deepmind uses Copilot SDK to orchestrate multi-model parallel reasoning chains across GPT-5, Claude, and other models
+  - Inbound: Copilot SDK apps and agents consume Darbot Deepmind as an MCP server for structured reasoning
 - Additional reasoning patterns
 - Performance optimizations
 - Extended validation rules
-- More comprehensive examples
+- Source-level test coverage (current tests validate logic via mocks)
 - Integration guides for popular frameworks
 
 ---

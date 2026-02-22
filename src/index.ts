@@ -121,8 +121,8 @@ class DarbotDeepmindServer {
       branchId,
     } = thoughtData;
 
-    let prefix = '';
-    let context = '';
+    let prefix: string;
+    let context: string;
 
     if (isRevision) {
       prefix = chalk.yellow('🧠 Revision');
@@ -136,6 +136,7 @@ class DarbotDeepmindServer {
     }
 
     const header = `${prefix} ${thoughtNumber}/${totalThoughts}${context}`;
+    // eslint-disable-next-line no-control-regex
     const borderLength = Math.max(header.replace(/\x1b\[[0-9;]*m/g, '').length, thought.length) + 4;
     const border = '─'.repeat(borderLength);
 
@@ -254,7 +255,7 @@ class DarbotDeepmindServer {
     } catch (error) {
       const errorMessage =
         error instanceof z.ZodError
-          ? `Validation error: ${error.errors.map((e) => `${e.path.join('.')}: ${e.message}`).join(', ')}`
+          ? `Validation error: ${error.issues.map((e) => `${e.path.join('.')}: ${e.message}`).join(', ')}`
           : error instanceof Error
             ? error.message
             : String(error);
@@ -312,7 +313,7 @@ class MicrosoftAuthServer {
     try {
       await execAsync('azureauth --version');
       return true;
-    } catch (error) {
+    } catch {
       return false;
     }
   }
@@ -426,12 +427,12 @@ class MicrosoftAuthServer {
 
       if (validatedInput.output === 'json') {
         try {
-          const parsed = JSON.parse(stdout);
+          const parsed = JSON.parse(stdout) as Record<string, string>;
           response.user = parsed.user;
           response.displayName = parsed.display_name;
           response.token = parsed.token;
           response.expirationDate = parsed.expiration_date;
-        } catch (parseError) {
+        } catch {
           console.error(chalk.yellow('⚠️  Microsoft Auth: Could not parse JSON output'));
         }
       }
@@ -450,7 +451,7 @@ class MicrosoftAuthServer {
       let errorMessage = 'Unknown error occurred';
 
       if (error instanceof z.ZodError) {
-        errorMessage = `Validation error: ${error.errors.map((e) => `${e.path.join('.')}: ${e.message}`).join(', ')}`;
+        errorMessage = `Validation error: ${error.issues.map((e) => `${e.path.join('.')}: ${e.message}`).join(', ')}`;
       } else if (error instanceof Error) {
         errorMessage = error.message;
         // Check for timeout
@@ -671,7 +672,7 @@ Note: The azureauth CLI must be installed separately. Installation instructions:
 /**
  * Main server setup and initialization
  */
-async function main() {
+async function main(): Promise<void> {
   try {
     const server = new Server(
       {
@@ -689,7 +690,7 @@ async function main() {
     const authServer = new MicrosoftAuthServer();
 
     // Handle list tools request
-    server.setRequestHandler(ListToolsRequestSchema, async () => ({
+    server.setRequestHandler(ListToolsRequestSchema, () => ({
       tools: [DARBOT_DEEPMIND_TOOL, MICROSOFT_AUTH_TOOL],
     }));
 
